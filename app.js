@@ -5,7 +5,7 @@ const GH_CONFIG = {
     owner: 'Lukasss895',                // Tvoje GitHub meno
     repo: 'lukasss895.gc',      // Názov repozitára (môže byť aj ten istý ako web)
     branch: 'main',                     // Vetva (main)
-    token: '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'    // Tvoj GitHub Personal Access Token (s právom repo)
+    token: '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'    // Tvoj GitHub Personal Access Token (s právom repo)
 };
 
 let currentUser = localStorage.getItem('gc_user') || null;
