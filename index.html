@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GO:COUNTER Inventory</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#1a1d21;color:#b8c4d0;font:14px Arial,Helvetica,sans-serif}a{color:#6fa8dc;text-decoration:none;cursor:pointer}a:hover{color:#fff}
+nav{background:#111418;display:flex;justify-content:space-between;align-items:center;padding:0 14px;height:40px}nav a{color:#fff;font-weight:bold;margin-right:18px}
+main{max-width:1000px;margin:20px auto;padding:0 12px}.box{background:#1f3149;border:1px solid #2c4263;padding:16px;margin-bottom:16px}
+h1,h2{color:#fff;font-weight:normal;margin:0 0 10px}.muted{color:#6f8aa3;font-size:12px}.bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+input[type=text],select{background:#17263a;border:1px solid #2c4263;color:#dce8f3;padding:6px 8px}button,.btn{background:#3b5873;color:#fff;border:0;padding:7px 14px;cursor:pointer;font-weight:bold;display:inline-block}button:hover,.btn:hover{background:#4d7096;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.it{position:relative;background:#16202d;cursor:pointer;display:block}.it input{position:absolute;top:6px;left:6px}
+.it .img{height:100px;display:flex;align-items:center;justify-content:center;color:#456;font-size:28px;font-weight:bold}.it .nm{padding:5px 8px;font-size:12px;color:#fff;min-height:38px}.it input:checked~.nm{outline:2px solid #fff}
+.r-consumer .nm{background:#6e7f90}.r-industrial .nm{background:#4a77b5}.r-milspec .nm{background:#4b69cd}.r-restricted .nm{background:#8847ff}.r-classified .nm{background:#d32ce6}.r-covert .nm{background:#eb4b4b}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}.av{width:22px;height:22px;vertical-align:middle;margin-right:4px}.pav{width:96px;height:96px;float:left;margin-right:16px}.err{color:#ff8a8a}.steam{background:#1b5a8a;padding:10px 20px;font-size:15px}
+</style></head><body><nav><div id="l"></div><div id="r"></div></nav><main id="m"></main>
+<script>
+const API='https://NAZOV.UCET.workers.dev'; // <- sem daj adresu svojho Workera (bez / na konci)
+let T=localStorage.getItem('t'),ME=null;
+if(location.hash.startsWith('#token=')){T=location.hash.slice(7);localStorage.setItem('t',T);location.hash='#/';}
+const $=s=>document.querySelector(s);
+function el(t,c,x,k){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;(k||[]).forEach(n=>n&&e.append(n));return e}
+function link(txt,h){const a=el('a',0,txt);a.href=h;return a}
+async function api(p,body){try{const r=await fetch(API+p,{method:body?'POST':'GET',headers:{...(T?{authorization:'Bearer '+T}:{}),'content-type':'application/json'},body:body?JSON.stringify(body):undefined});return await r.json()}catch(e){return{error:'Server nedostupný'}}}
+function tile(it,name){const l=el('label','it r-'+it.rarity);if(name){const c=el('input');c.type='checkbox';c.name=name;c.value=it.id;l.append(c)}
+  l.append(el('div','img',0,[el('span',0,it.name.slice(0,3))]),el('div','nm',0,[el('b',0,it.name),el('br'),it.skin]));return l}
+function nav(){$('#l').replaceChildren(link('Home','#/'),link('Inventory','#/inv/'+(ME?ME.steamid64:'')),link('Trades','#/trades'));
+  const r=$('#r');r.replaceChildren();if(ME){const a=link(ME.name,'#/u/'+ME.steamid64);if(ME.avatar){const i=el('img','av');i.src=ME.avatar;a.prepend(i)}r.append(a,' ',link('Odhlásiť','#/out'))}
+  else{const a=el('a',0,'Prihlásiť cez Steam');a.href=API+'/login';r.append(a)}}
+async function render(){const h=location.hash.slice(2).split('/'),m=$('#m');m.replaceChildren();const v=h[0]||'home',arg=decodeURIComponent(h[1]||'');
+  if(v==='out'){localStorage.removeItem('t');T=null;ME=null;location.hash='#/';return}
+  if(v==='home'){const s=await api('/api/stats');m.append(el('div','box',0,[el('h1',0,'GO:COUNTER'),el('p',0,'Prezeraj inventáre, profily a obchoduj s ostatnými hráčmi.'),
+    ME?null:Object.assign(el('a','btn steam','Prihlásiť cez Steam'),{href:API+'/login'}),
+    (()=>{const f=el('form','bar'),i=el('input');i.type='text';i.placeholder='Nájsť hráča (SteamID64 alebo meno)';f.append(i,el('button',0,'Hľadať'));f.onsubmit=e=>{e.preventDefault();if(i.value.trim())location.hash='#/u/'+encodeURIComponent(i.value.trim())};return f})(),
+    el('p','muted',s.u!=null?s.u+' hráčov, '+s.i+' predmetov':'')]));return}
+  if(v==='u'){const u=await api('/api/user?u='+encodeURIComponent(arg));if(u.error){m.append(el('div','box',u.error==='nf'?'Hráč neexistuje.':u.error));return}
+    const b=el('div','box');if(u.avatar){const i=el('img','pav');i.src=u.avatar;b.append(i)}
+    b.append(el('h1',0,u.name),el('p','muted',u.steamid64+' | Registrovaný: '+u.created),el('p',0,'Inventory '+u.count),link('Zobraziť inventár','#/inv/'+u.steamid64));
+    if(ME&&ME.id!==u.id){b.append(' ',Object.assign(link('Obchodovať','#/trade/'+u.steamid64),{className:'btn'}))}m.append(b);return}
+  if(v==='inv'){if(!arg){m.append(el('div','box',0,['Najprv sa prihlás cez Steam.']));return}
+    const q=new URLSearchParams(location.search),f=q.get('f')||'';const d=await api('/api/inventory?u='+encodeURIComponent(arg));
+    if(d.error){m.append(el('div','box',d.error==='nf'?'Hráč neexistuje.':d.error));return}
+    const box=el('div','box'),g=el('div','grid'),fi=el('input'),sr=el('select'),ss=el('select');fi.type='text';fi.placeholder='Filter Name';
+    sr.innerHTML='<option value="">Show All</option>'+['consumer','industrial','milspec','restricted','classified','covert'].map(x=>'<option>'+x+'</option>').join('');
+    ss.innerHTML='<option value="new">Sort by Newest</option><option value="name">Sort by Name</option><option value="rarity">Sort by Rarity</option>';
+    const go=async()=>{const x=await api('/api/inventory?u='+encodeURIComponent(arg)+'&f='+encodeURIComponent(fi.value)+'&r='+sr.value+'&s='+ss.value);g.replaceChildren(...x.items.map(i=>tile(i)));if(!x.items.length)g.append(el('p','muted','Prázdne.'))};
+    fi.oninput=go;sr.onchange=go;ss.onchange=go;box.append(el('h1',0,'Inventory: '+d.user.name),el('div','bar',0,[fi,sr,ss]),g);m.append(box);g.replaceChildren(...d.items.map(i=>tile(i)));if(!d.items.length)g.append(el('p','muted','Prázdne.'));return}
+  if(v==='trade'){if(!ME){m.append(el('div','box','Najprv sa prihlás cez Steam.'));return}
+    const [a,b]=await Promise.all([api('/api/inventory?u='+ME.steamid64),api('/api/inventory?u='+encodeURIComponent(arg))]);if(b.error){m.append(el('div','box','Hráč neexistuje.'));return}
+    const err=el('p','err'),btn=el('button',0,'Odoslať ponuku'),ga=el('div','grid'),gb=el('div','grid');ga.append(...a.items.map(i=>tile(i,'give')));gb.append(...b.items.map(i=>tile(i,'get')));
+    btn.onclick=async()=>{const ids=n=>[...document.querySelectorAll('input[name='+n+']:checked')].map(x=>+x.value);const r=await api('/api/trade',{to:b.user.steamid64,give:ids('give'),get:ids('get')});if(r.ok)location.hash='#/trades';else err.textContent=r.error||'Chyba'};
+    m.append(el('div','box',0,[el('h1',0,'Ponuka pre '+b.user.name),el('p','muted','Označ svoje predmety (dávaš) a jeho predmety (chceš).'),err,btn]),
+      el('div','cols',0,[el('div','box',0,[el('h2',0,'Ty dávaš'),ga]),el('div','box',0,[el('h2',0,'Chceš od '+b.user.name),gb])]));return}
+  if(v==='trades'){if(!ME){m.append(el('div','box','Najprv sa prihlás cez Steam.'));return}
+    const d=await api('/api/trades');const box=el('div','box',0,[el('h1',0,'Trades')]);if(!d.trades||!d.trades.length)box.append(el('p','muted','Žiadne ponuky.'));
+    for(const t of d.trades||[]){const s=x=>x.map(i=>i.name+' | '+i.skin).join(', ')||'nič';const c=el('div','box',0,[el('b',0,t.an+' → '+t.bn),' ['+t.status+']',el('br'),'Dáva: '+s(t.items.filter(i=>i.owner_id===t.from_id)),el('br'),'Chce: '+s(t.items.filter(i=>i.owner_id!==t.from_id))]);
+      if(t.status==='pending'){const mk=(txt,act)=>{const b=el('button',0,txt);b.onclick=async()=>{const r=await api('/api/trade/act',{id:t.id,act});if(r.error)alert(r.error);render()};return b};
+        c.append(el('br'),...(t.to_id===d.me?[mk('Prijať','accept'),' ',mk('Odmietnuť','decline')]:[mk('Zrušiť','cancel')]))}box.append(c)}m.append(box);return}
+  m.append(el('div','box','Stránka neexistuje.'))}
+async function init(){if(T){const r=await api('/api/me');ME=r&&r.id?r:null;if(!ME){localStorage.removeItem('t');T=null}}nav();render()}
+window.onhashchange=()=>{nav();render()};init();
+</script></body></html>
