@@ -1,11 +1,9 @@
 // =========================================================
-// NASTAVENIA GITHUB REPOZITÁRA (DOPLŇ SVOJE ÚDAJE)
+// NASTAVENIA GITHUB GIST (BEZ BLOKOVANIA TOKENU)
 // =========================================================
-const GH_CONFIG = {
-    owner: 'Lukasss895',                // Tvoje GitHub meno
-    repo: 'lukasss895.gc',      // Názov repozitára (môže byť aj ten istý ako web)
-    branch: 'main',                     // Vetva (main)
-    token: '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'    // Tvoj GitHub Personal Access Token (s právom repo)
+const GIST_CONFIG = {
+    token: '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', // Tvoj Personal Access Token (classic s právom 'gist')
+    gistId: 'gist:1a959530626a18f06da3c489e38f9862'        // Dlhý reťazec z URL adresy tvojho Gistu
 };
 
 let currentUser = localStorage.getItem('gc_user') || null;
@@ -13,7 +11,7 @@ let viewedUser = currentUser;
 let selectedMyItems = new Set();
 let selectedTheirItems = new Set();
 
-// Base64 kódovanie s podporou UTF-8 (diakritika, špeciálne znaky)
+// Base64 kódovanie s podporou UTF-8
 function utf8ToBase64(str) {
     return btoa(unescape(encodeURIComponent(str)));
 }
@@ -22,44 +20,46 @@ function base64ToUtf8(str) {
 }
 
 // =========================================================
-// GITHUB REST API KOMUNIKÁCIA (ČÍTANIE A ZÁPIS SÚBOROV)
+// GITHUB GIST API KOMUNIKÁCIA
 // =========================================================
-async function ghGetFile(path) {
-    const url = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${path}?ref=${GH_CONFIG.branch}&t=${Date.now()}`;
+async function loadGistData() {
+    const url = `https://api.github.com/gists/${GIST_CONFIG.gistId}?t=${Date.now()}`;
     const res = await fetch(url, {
         headers: {
-            'Authorization': `Bearer ${GH_CONFIG.token}`,
+            'Authorization': `Bearer ${GIST_CONFIG.token}`,
             'Accept': 'application/vnd.github.v3+json'
         }
     });
     if (res.status === 200) {
         const data = await res.json();
-        return { exists: true, content: base64ToUtf8(data.content), sha: data.sha };
+        const file = data.files['gocounter_db.json'];
+        if (file && file.content) {
+            try {
+                return JSON.parse(file.content);
+            } catch (e) {
+                return { users: {}, inventories: {}, trades: [] };
+            }
+        }
     }
-    return { exists: false, content: null, sha: null };
+    return { users: {}, inventories: {}, trades: [] };
 }
 
-async function ghSaveFile(path, content, commitMessage, sha = null) {
-    if (!sha) {
-        const existing = await ghGetFile(path);
-        if (existing.exists) sha = existing.sha;
-    }
-    const url = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${path}`;
-    const body = {
-        message: commitMessage,
-        content: utf8ToBase64(content),
-        branch: GH_CONFIG.branch
-    };
-    if (sha) body.sha = sha;
-
+async function saveGistData(dbData) {
+    const url = `https://api.github.com/gists/${GIST_CONFIG.gistId}`;
     const res = await fetch(url, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
-            'Authorization': `Bearer ${GH_CONFIG.token}`,
+            'Authorization': `Bearer ${GIST_CONFIG.token}`,
             'Accept': 'application/vnd.github.v3+json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify({
+            files: {
+                'gocounter_db.json': {
+                    content: JSON.stringify(dbData, null, 2)
+                }
+            }
+        })
     });
     return res.ok;
 }
@@ -69,7 +69,6 @@ async function ghSaveFile(path, content, commitMessage, sha = null) {
 // =========================================================
 function parseInventoryTxt(rawText) {
     const items = {};
-    // Nájde každý blok položky "UID" { ... }
     const regex = /"(\d+)"\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/gs;
     let match;
     while ((match = regex.exec(rawText)) !== null) {
@@ -107,7 +106,7 @@ function buildInventoryTxt(itemsObj) {
 }
 
 // =========================================================
-// REGISTRÁCIA A PRIHLÁSENIE (ULOŽENÉ V data/users.json)
+// REGISTRÁCIA A PRIHLÁSENIE
 // =========================================================
 async function handleRegister() {
     const username = document.getElementById('reg-user').value.trim();
@@ -122,30 +121,32 @@ async function handleRegister() {
     }
 
     const key = username.toLowerCase();
-    const file = await ghGetFile('data/users.json');
-    const users = file.exists ? JSON.parse(file.content) : {};
+    const db = await loadGistData();
+    if (!db.users) db.users = {};
+    if (!db.inventories) db.inventories = {};
+    if (!db.trades) db.trades = [];
 
-    if (users[key]) {
+    if (db.users[key]) {
         errEl.innerText = 'Tento používateľ už existuje!';
         errEl.style.display = 'block';
         return;
     }
 
-    users[key] = {
+    db.users[key] = {
         username: username,
         password: btoa(password),
         steamid64: steamid,
         bio: 'No information given.'
     };
 
-    const ok = await ghSaveFile('data/users.json', JSON.stringify(users, null, 2), `Register user: ${username}`, file.sha);
+    const ok = await saveGistData(db);
     if (ok) {
         currentUser = key;
         viewedUser = key;
         localStorage.setItem('gc_user', key);
         initApp();
     } else {
-        errEl.innerText = 'Chyba spojenia s GitHubom! Skontroluj Token v app.js.';
+        errEl.innerText = 'Chyba spojenia s Gistom! Skontroluj token.';
         errEl.style.display = 'block';
     }
 }
@@ -155,10 +156,8 @@ async function handleLogin() {
     const password = document.getElementById('login-pass').value;
     const errEl = document.getElementById('auth-error');
 
-    const file = await ghGetFile('data/users.json');
-    const users = file.exists ? JSON.parse(file.content) : {};
-
-    if (users[username] && users[username].password === btoa(password)) {
+    const db = await loadGistData();
+    if (db.users && db.users[username] && db.users[username].password === btoa(password)) {
         currentUser = username;
         viewedUser = username;
         localStorage.setItem('gc_user', username);
@@ -176,7 +175,7 @@ function logout() {
 }
 
 // =========================================================
-// NAVIGÁCIA A ZOBRAZENIE STRÁNOK
+// NAVIGÁCIA
 // =========================================================
 function showPage(pageName) {
     ['auth', 'profile', 'inventory', 'trades', 'players'].forEach(p => {
@@ -217,12 +216,12 @@ async function initApp() {
 }
 
 // =========================================================
-// PROFIL, NAHRATIE A STIAHNUTIE inventory.txt
+// PROFIL & INVENTÁR SYNC
 // =========================================================
 async function loadProfile(userKey) {
     viewedUser = userKey;
-    const usersFile = await ghGetFile('data/users.json');
-    const users = usersFile.exists ? JSON.parse(usersFile.content) : {};
+    const db = await loadGistData();
+    const users = db.users || {};
     const prof = users[userKey] || { username: userKey, steamid64: 'Unknown', bio: '' };
 
     document.getElementById('prof-username').innerText = prof.username;
@@ -234,8 +233,9 @@ async function loadProfile(userKey) {
     document.getElementById('prof-trade-btn-area').innerHTML = isMe ? '' :
         `<button onclick="startTradeWith('${userKey}')" class="btn-steam btn-green" style="width:100%;">Send Trade Offer</button>`;
 
-    const invFile = await ghGetFile(`inventories/${userKey}.txt`);
-    const items = invFile.exists ? parseInventoryTxt(invFile.content) : {};
+    const inventories = db.inventories || {};
+    const rawInv = inventories[userKey] || '';
+    const items = parseInventoryTxt(rawInv);
     const count = Object.keys(items).length;
 
     document.getElementById('side-inv-count').innerText = count;
@@ -248,15 +248,20 @@ async function uploadInventoryFile() {
 
     const reader = new FileReader();
     reader.onload = async function(e) {
-        const parsed = parseInventoryTxt(e.target.result);
+        const rawText = e.target.result;
+        const parsed = parseInventoryTxt(rawText);
         const count = Object.keys(parsed).length;
         if (count === 0) return alert('Súbor neobsahuje žiadne platné položky z csgo_gc.');
 
         const cleanTxt = buildInventoryTxt(parsed);
-        const ok = await ghSaveFile(`inventories/${currentUser}.txt`, cleanTxt, `Upload inventory: ${currentUser}`);
+        const db = await loadGistData();
+        if (!db.inventories) db.inventories = {};
+        db.inventories[currentUser] = cleanTxt;
+
+        const ok = await saveGistData(db);
         if (ok) {
             const banner = document.getElementById('status-banner');
-            banner.innerText = `Hotovo! Na GitHub sa uložilo ${count} predmetov.`;
+            banner.innerText = `Hotovo! Do Gistu sa uložilo ${count} predmetov.`;
             banner.style.display = 'block';
             loadProfile(currentUser);
         }
@@ -265,8 +270,8 @@ async function uploadInventoryFile() {
 }
 
 async function downloadUpdatedInventory() {
-    const invFile = await ghGetFile(`inventories/${currentUser}.txt`);
-    const content = invFile.exists ? invFile.content : `"items"\n{\n}\n`;
+    const db = await loadGistData();
+    const content = (db.inventories && db.inventories[currentUser]) ? db.inventories[currentUser] : `"items"\n{\n}\n`;
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -275,7 +280,7 @@ async function downloadUpdatedInventory() {
 }
 
 // =========================================================
-// INVENTÁR A VYTVORENIE TRADE PONUKY
+// TRADES & INVENTORY
 // =========================================================
 function openUserInventory(userKey) {
     viewedUser = userKey;
@@ -293,8 +298,11 @@ function startTradeWith(userKey) {
 
 async function renderInventoryPage(isTradeMode = false) {
     const search = document.getElementById('inv-search').value.toLowerCase();
-    const myFile = await ghGetFile(`inventories/${currentUser}.txt`);
-    const myItems = myFile.exists ? parseInventoryTxt(myFile.content) : {};
+    const db = await loadGistData();
+    const inventories = db.inventories || {};
+    
+    const myRaw = inventories[currentUser] || '';
+    const myItems = parseInventoryTxt(myRaw);
 
     if (!isTradeMode && viewedUser === currentUser) {
         document.getElementById('inv-title').innerText = `Tvoj inventár (${Object.keys(myItems).length} predmetov)`;
@@ -303,8 +311,8 @@ async function renderInventoryPage(isTradeMode = false) {
         document.getElementById('send-trade-submit').style.display = 'none';
         renderGrid('single-inv-grid', myItems, search, null);
     } else {
-        const theirFile = await ghGetFile(`inventories/${viewedUser}.txt`);
-        const theirItems = theirFile.exists ? parseInventoryTxt(theirFile.content) : {};
+        const theirRaw = inventories[viewedUser] || '';
+        const theirItems = parseInventoryTxt(theirRaw);
 
         document.getElementById('inv-title').innerText = `Trade Offer s hráčom: ${viewedUser}`;
         document.getElementById('single-inv-view').style.display = 'none';
@@ -349,10 +357,10 @@ async function submitTradeOffer() {
     if (selectedMyItems.size === 0 && selectedTheirItems.size === 0) {
         return alert('Vyber aspoň jednu položku na výmenu!');
     }
-    const tradesFile = await ghGetFile('data/trades.json');
-    const trades = tradesFile.exists ? JSON.parse(tradesFile.content) : [];
+    const db = await loadGistData();
+    if (!db.trades) db.trades = [];
 
-    trades.push({
+    db.trades.push({
         id: 'tr_' + Date.now(),
         from: currentUser,
         to: viewedUser,
@@ -361,19 +369,16 @@ async function submitTradeOffer() {
         status: 'pending'
     });
 
-    const ok = await ghSaveFile('data/trades.json', JSON.stringify(trades, null, 2), `New trade: ${currentUser} -> ${viewedUser}`, tradesFile.sha);
+    const ok = await saveGistData(db);
     if (ok) {
-        alert('Trade ponuka bola odoslaná a uložená na GitHub!');
+        alert('Trade ponuka bola odoslaná do Gistu!');
         showPage('trades');
     }
 }
 
-// =========================================================
-// PRIJATIE OBCHODU (ODPÍSANIE Z inventory.txt)
-// =========================================================
 async function loadTrades() {
-    const tradesFile = await ghGetFile('data/trades.json');
-    const trades = tradesFile.exists ? JSON.parse(tradesFile.content) : [];
+    const db = await loadGistData();
+    const trades = db.trades || [];
     const list = document.getElementById('trades-list');
     list.innerHTML = '';
 
@@ -404,18 +409,19 @@ async function loadTrades() {
 }
 
 async function acceptTrade(tradeId) {
-    const tradesFile = await ghGetFile('data/trades.json');
-    const trades = JSON.parse(tradesFile.content);
+    const db = await loadGistData();
+    const trades = db.trades || [];
     const tr = trades.find(t => t.id === tradeId && t.to === currentUser && t.status === 'pending');
     if (!tr) return;
 
-    const fSender = await ghGetFile(`inventories/${tr.from}.txt`);
-    const fReceiver = await ghGetFile(`inventories/${tr.to}.txt`);
+    if (!db.inventories) db.inventories = {};
+    const invSenderRaw = db.inventories[tr.from] || '';
+    const invReceiverRaw = db.inventories[tr.to] || '';
 
-    const invSender = fSender.exists ? parseInventoryTxt(fSender.content) : {};
-    const invReceiver = fReceiver.exists ? parseInventoryTxt(fReceiver.content) : {};
+    const invSender = parseInventoryTxt(invSenderRaw);
+    const invReceiver = parseInventoryTxt(invReceiverRaw);
 
-    // Presun z odosielateľa k príjemcovi (odpísanie z inventory.txt odosielateľa)
+    // Presun položiek a odpísanie z pôvodného inventory.txt
     tr.from_items.forEach(uid => {
         if (invSender[uid]) {
             invReceiver[uid] = invSender[uid];
@@ -423,7 +429,6 @@ async function acceptTrade(tradeId) {
         }
     });
 
-    // Presun z príjemcu k odosielateľovi (odpísanie z inventory.txt príjemcu)
     tr.to_items.forEach(uid => {
         if (invReceiver[uid]) {
             invSender[uid] = invReceiver[uid];
@@ -431,34 +436,33 @@ async function acceptTrade(tradeId) {
         }
     });
 
-    // Zápis aktualizovaných inventory.txt súborov späť na GitHub
-    await ghSaveFile(`inventories/${tr.from}.txt`, buildInventoryTxt(invSender), `Trade sync: ${tr.from}`, fSender.sha);
-    await ghSaveFile(`inventories/${tr.to}.txt`, buildInventoryTxt(invReceiver), `Trade sync: ${tr.to}`, fReceiver.sha);
-
+    db.inventories[tr.from] = buildInventoryTxt(invSender);
+    db.inventories[tr.to] = buildInventoryTxt(invReceiver);
     tr.status = 'accepted';
-    await ghSaveFile('data/trades.json', JSON.stringify(trades, null, 2), `Trade accepted: ${tradeId}`, tradesFile.sha);
 
-    alert('Trade prijatý! Položky boli odpísané z pôvodného inventory.txt a pripísané druhému hráčovi.');
-    loadTrades();
-    updateTradeBadge();
+    const ok = await saveGistData(db);
+    if (ok) {
+        alert('Trade prijatý! Predmety boli úspešne presunuté a odpísané.');
+        loadTrades();
+        updateTradeBadge();
+    }
 }
 
 async function declineTrade(tradeId) {
-    const tradesFile = await ghGetFile('data/trades.json');
-    const trades = JSON.parse(tradesFile.content);
+    const db = await loadGistData();
+    const trades = db.trades || [];
     const tr = trades.find(t => t.id === tradeId);
     if (tr) {
         tr.status = 'declined';
-        await ghSaveFile('data/trades.json', JSON.stringify(trades, null, 2), `Trade declined: ${tradeId}`, tradesFile.sha);
+        await saveGistData(db);
         loadTrades();
         updateTradeBadge();
     }
 }
 
 async function updateTradeBadge() {
-    const tradesFile = await ghGetFile('data/trades.json');
-    if (!tradesFile.exists) return;
-    const trades = JSON.parse(tradesFile.content);
+    const db = await loadGistData();
+    const trades = db.trades || [];
     const pending = trades.filter(t => t.to === currentUser && t.status === 'pending').length;
     const badge = document.getElementById('trade-badge');
     badge.innerText = pending;
@@ -466,8 +470,8 @@ async function updateTradeBadge() {
 }
 
 async function loadPlayers() {
-    const file = await ghGetFile('data/users.json');
-    const users = file.exists ? JSON.parse(file.content) : {};
+    const db = await loadGistData();
+    const users = db.users || {};
     const grid = document.getElementById('players-list');
     grid.innerHTML = '';
 
