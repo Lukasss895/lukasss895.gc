@@ -12,7 +12,7 @@ input[type=text],select{background:#17263a;border:1px solid #2c4263;color:#dce8f
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}.av{width:22px;height:22px;vertical-align:middle;margin-right:4px}.pav{width:96px;height:96px;float:left;margin-right:16px}.err{color:#ff8a8a}.steam{background:#1b5a8a;padding:10px 20px;font-size:15px}
 </style></head><body><nav><div id="l"></div><div id="r"></div></nav><main id="m"></main>
 <script>
-const API='https://NAZOV.UCET.workers.dev'; // <- sem daj adresu svojho Workera (bez / na konci)
+const API='https://lukasss895-gc.jozkobukva6.workers.dev'; // <- sem daj adresu svojho Workera (bez / na konci)
 let T=localStorage.getItem('t'),ME=null;
 if(location.hash.startsWith('#token=')){T=location.hash.slice(7);localStorage.setItem('t',T);location.hash='#/';}
 const $=s=>document.querySelector(s);
