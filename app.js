@@ -2,10 +2,10 @@
 // NASTAVENIA GITHUB REPOZITÁRA (DOPLŇ SVOJE ÚDAJE)
 // =========================================================
 const GH_CONFIG = {
-    owner: 'lukasss895',                // Tvoje GitHub meno
-    repo: 'gocounter-inventories',      // Názov repozitára (môže byť aj ten istý ako web)
+    owner: 'Lukasss895',                // Tvoje GitHub meno
+    repo: 'lukasss895.gc',      // Názov repozitára (môže byť aj ten istý ako web)
     branch: 'main',                     // Vetva (main)
-    token: 'ghp_SEM_VLOZ_SVOJ_TOKEN'    // Tvoj GitHub Personal Access Token (s právom repo)
+    token: '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'    // Tvoj GitHub Personal Access Token (s právom repo)
 };
 
 let currentUser = localStorage.getItem('gc_user') || null;
