@@ -8,7 +8,7 @@
 </head>
 <body>
 
-    <!-- HORNÁ LIŠTA (Navigácia viditeľná stále) -->
+    <!-- HORNÁ LIŠTA (Navigácia) -->
     <div class="navbar" id="main-navbar" style="display: flex;">
         <ul class="nav-links">
             <li><a href="#" onclick="showPage('profile'); return false;" id="nav-profile" class="active">Home</a></li>
@@ -24,10 +24,14 @@
 
     <!-- 1. STRÁNKA: PRIHLÁSENIE / REGISTRÁCIA -->
     <div id="page-auth" class="profile-wrapper" style="padding: 50px; display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;">
+        
+        <!-- SIGN IN BOX -->
         <div class="showcase-box" style="width: 360px;">
             <div class="showcase-header">SIGN IN</div>
             <div class="showcase-content">
-                <p id="auth-error" style="color:#eb4b4b; margin-bottom:10px; display:none;"></p>
+                <!-- Hláška pre prihlásenie priamo v HTML -->
+                <p id="auth-error" style="margin-bottom:10px; display:none; font-size:13px;"></p>
+                
                 <p style="margin-bottom:5px;">Username</p>
                 <input type="text" id="login-user" class="steam-input">
                 <p style="margin-bottom:5px;">Password</p>
@@ -36,9 +40,13 @@
             </div>
         </div>
 
+        <!-- CREATE ACCOUNT BOX -->
         <div class="showcase-box" style="width: 360px;">
             <div class="showcase-header">CREATE ACCOUNT</div>
             <div class="showcase-content">
+                <!-- Hláška pre registráciu priamo v HTML -->
+                <p id="reg-error" style="margin-bottom:10px; display:none; font-size:13px;"></p>
+
                 <p style="margin-bottom:5px;">Username</p>
                 <input type="text" id="reg-user" class="steam-input">
                 <p style="margin-bottom:5px;">SteamID64 (pre csgo_gc)</p>
@@ -81,7 +89,6 @@
 
         <div class="profile-body">
             <div class="profile-main-col">
-                <!-- Sekcia na nahrávanie inventory.txt -->
                 <div id="my-sync-box" class="showcase-box" style="display:none;">
                     <div class="showcase-header">CSGO_GC INVENTORY SYNC (GitHub Auto-Save)</div>
                     <div class="showcase-content">
@@ -97,7 +104,6 @@
                     </div>
                 </div>
 
-                <!-- Event Stats -->
                 <div class="showcase-box">
                     <div class="showcase-header">Event Stats</div>
                     <div class="showcase-content">
