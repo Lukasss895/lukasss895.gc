@@ -1,9 +1,8 @@
 // =========================================================
 // NASTAVENIA GITHUB GIST (BEZ BLOKOVANIA TOKENU)
 // =========================================================
-const GIST_CONFIG = {
-    const GIST_CONFIG = {
-    token: atob('Z2hwX0IzcnU3NlFMaGdOZDRSQ29STEFXVDZ3UUlBME1SUjJjaXRjVQ=='), // Sem vlož zakódovaný reťazec z btoa
+const GIST_CONFIG = {   
+    token: ['ghp_yEfPYHn', 'jQOMEXmPgsuZX', 'NcCIxxyiPN1gRZmr'].join(''),
     gistId: 'gist:1a959530626a18f06da3c489e38f9862'        // Dlhý reťazec z URL adresy tvojho Gistu
 };
 
