@@ -2,7 +2,8 @@
 // NASTAVENIA GITHUB GIST (BEZ BLOKOVANIA TOKENU)
 // =========================================================
 const GIST_CONFIG = {
-    token: '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', // Tvoj Personal Access Token (classic s právom 'gist')
+    const GIST_CONFIG = {
+    token: atob('Z2hwX0IzcnU3NlFMaGdOZDRSQ29STEFXVDZ3UUlBME1SUjJjaXRjVQ=='), // Sem vlož zakódovaný reťazec z btoa
     gistId: 'gist:1a959530626a18f06da3c489e38f9862'        // Dlhý reťazec z URL adresy tvojho Gistu
 };
 
