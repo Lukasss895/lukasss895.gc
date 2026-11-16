@@ -22,38 +22,14 @@
         </div>
     </div>
 
-    <!-- 1. STRÁNKA: PRIHLÁSENIE / REGISTRÁCIA -->
-    <div id="page-auth" class="profile-wrapper" style="padding: 50px; display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;">
-        
-        <!-- SIGN IN BOX -->
-        <div class="showcase-box" style="width: 360px;">
+    <!-- 1. STRÁNKA: PRIHLÁSENIE CEZ STEAM -->
+    <div id="page-auth" class="profile-wrapper" style="padding:50px;display:flex;justify-content:center">
+        <div class="showcase-box" style="width:420px;height:fit-content">
             <div class="showcase-header">SIGN IN</div>
-            <div class="showcase-content">
-                <!-- Hláška pre prihlásenie priamo v HTML -->
-                <p id="auth-error" style="margin-bottom:10px; display:none; font-size:13px;"></p>
-                
-                <p style="margin-bottom:5px;">Username</p>
-                <input type="text" id="login-user" class="steam-input">
-                <p style="margin-bottom:5px;">Password</p>
-                <input type="password" id="login-pass" class="steam-input">
-                <button onclick="handleLogin()" class="btn-steam btn-green" style="width:100%; margin-top:15px;">Sign In</button>
-            </div>
-        </div>
-
-        <!-- CREATE ACCOUNT BOX -->
-        <div class="showcase-box" style="width: 360px;">
-            <div class="showcase-header">CREATE ACCOUNT</div>
-            <div class="showcase-content">
-                <!-- Hláška pre registráciu priamo v HTML -->
-                <p id="reg-error" style="margin-bottom:10px; display:none; font-size:13px;"></p>
-
-                <p style="margin-bottom:5px;">Username</p>
-                <input type="text" id="reg-user" class="steam-input">
-                <p style="margin-bottom:5px;">SteamID64 (pre csgo_gc)</p>
-                <input type="text" id="reg-steamid" placeholder="7656119..." class="steam-input">
-                <p style="margin-bottom:5px;">Password</p>
-                <input type="password" id="reg-pass" class="steam-input">
-                <button onclick="handleRegister()" class="btn-steam" style="width:100%; margin-top:15px;">Register</button>
+            <div class="showcase-content" style="text-align:center">
+                <p id="auth-error" style="color:#eb4b4b;margin-bottom:10px"></p>
+                <p style="margin-bottom:15px">Prihlás sa cez Steam. Nový hráč sa pri prvom prihlásení automaticky zaregistruje a objaví sa v zozname Players.</p>
+                <a id="steam-login-btn" class="btn-steam btn-green" style="padding:10px 24px;font-size:14px">Sign in through Steam</a>
             </div>
         </div>
     </div>
@@ -69,7 +45,7 @@
                     <h1 id="prof-username">Player</h1>
                     <div class="steam-ids">
                         SteamID64: <span id="prof-steamid">76561198000000000</span><br>
-                        Status: <span style="color:#57cbde;">Connected to GitHub Gist</span>
+                        Status: <span style="color:#57cbde;">Steam account</span>
                     </div>
                     <div class="profile-bio" id="prof-bio">No information given.</div>
                 </div>
@@ -90,11 +66,11 @@
         <div class="profile-body">
             <div class="profile-main-col">
                 <div id="my-sync-box" class="showcase-box" style="display:none;">
-                    <div class="showcase-header">CSGO_GC INVENTORY SYNC (GitHub Auto-Save)</div>
+                    <div class="showcase-header">CSGO_GC INVENTORY SYNC (auto-save)</div>
                     <div class="showcase-content">
                         <p style="margin-bottom:12px; line-height:1.5;">
                             Nahraj svoj súbor <b>inventory.txt</b> z priečinka <code>csgo_gc</code>. 
-                            Všetko sa okamžite uloží na GitHub. Keď s niekým vymeníš veci, klikni na <b>Download Updated inventory.txt</b> a prepíš si súbor v hre.
+                            Všetko sa okamžite uloží. Keď s niekým vymeníš veci, klikni na <b>Download Updated inventory.txt</b> a prepíš si súbor v hre.
                         </p>
                         <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px; flex-wrap:wrap;">
                             <input type="file" id="inv-file-input" accept=".txt" style="color:#fff;">
