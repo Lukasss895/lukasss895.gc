@@ -8,15 +8,15 @@
 </head>
 <body>
 
-    <!-- Horná lišta 1:1 Steam / eddies.cc -->
-    <div class="navbar" id="main-navbar" style="display:none;">
+    <!-- HORNÁ LIŠTA (Navigácia viditeľná stále) -->
+    <div class="navbar" id="main-navbar" style="display: flex;">
         <ul class="nav-links">
             <li><a href="#" onclick="showPage('profile'); return false;" id="nav-profile" class="active">Home</a></li>
             <li><a href="#" onclick="showPage('inventory'); return false;" id="nav-inventory">Inventory</a></li>
             <li><a href="#" onclick="showPage('trades'); return false;" id="nav-trades">Trade Offers <span id="trade-badge" class="badge-count" style="display:none;">0</span></a></li>
             <li><a href="#" onclick="showPage('players'); return false;" id="nav-players">Players</a></li>
         </ul>
-        <div class="nav-user" id="nav-user-area">
+        <div class="nav-user" id="nav-user-area" style="display: none;">
             <span id="nav-username">Player</span>
             <button onclick="logout()" class="btn-steam" style="padding:3px 10px; font-size:11px; margin-left:10px;">Logout</button>
         </div>
@@ -87,7 +87,7 @@
                     <div class="showcase-content">
                         <p style="margin-bottom:12px; line-height:1.5;">
                             Nahraj svoj súbor <b>inventory.txt</b> z priečinka <code>csgo_gc</code>. 
-                            Všetko sa okamžite uloží na GitHub. Keď s niekým vymeníš veci, kliknij na <b>Download Updated inventory.txt</b> a prepíš si súbor v hre.
+                            Všetko sa okamžite uloží na GitHub. Keď s niekým vymeníš veci, klikni na <b>Download Updated inventory.txt</b> a prepíš si súbor v hre.
                         </p>
                         <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px; flex-wrap:wrap;">
                             <input type="file" id="inv-file-input" accept=".txt" style="color:#fff;">
