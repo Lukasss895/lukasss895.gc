@@ -13,16 +13,21 @@ const GIST_CONFIG = {
     gistId: '1a959530626a18f06da3c489e38f9862'
 };
 
-// Globálna databáza
+// Globálny stav aplikácie
 let dbData = { users: {}, inventories: {}, trades: [] };
 let currentUser = null;
+let viewedUser = null;
+let activePage = 'profile';
+
+// Pre Trade Offer výbery
+let tradeTargetUser = null;
+let selectedMyItems = [];
+let selectedTheirItems = [];
 
 // Načítanie dát z Gistu
 async function loadGistData() {
     try {
-        const response = await fetch(`https://api.github.com/gists/${GIST_CONFIG.gistId}`, {
-            headers: {
-                'Authorization': `token ${GIST_CONFIG.token}`,
+        const response = await fetch(`https://api.github.com/gists/${GIST_CONFIG.gistId}`, { headers: { 'Authorization': `token ${GIST_CONFIG.token}`,
                 'Accept': 'application/vnd.github.v3+json'
             }
         });
@@ -51,10 +56,7 @@ async function loadGistData() {
 // Uloženie dát do Gistu
 async function saveGistData() {
     try {
-        const response = await fetch(`https://api.github.com/gists/${GIST_CONFIG.gistId}`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `token ${GIST_CONFIG.token}`,
+        const response = await fetch(`https://api.github.com/gists/${GIST_CONFIG.gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${GIST_CONFIG.token}`,
                 'Accept': 'application/vnd.github.v3+json',
                 'Content-Type': 'application/json',
             },
@@ -74,132 +76,253 @@ async function saveGistData() {
     }
 }
 
-// Inicializácia a automatická registrácia/prihlásenie hráča
+// Inicializácia pri načítaní stránky
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("Načítavam platformu...");
     dbData = await loadGistData();
-
-    // Simulácia/získanie aktuálneho používateľa (môžeš prepojiť so Steam loginom alebo inputom)
-    currentUser = localStorage.getItem('gocounter_current_user') || prompt("Zadaj svoje hráčske meno (Nickname):");
-    if (currentUser) {
-        currentUser = currentUser.trim();
-        localStorage.setItem('gocounter_current_user', currentUser);
-
-        // Ak hráč ešte neexistuje v databáze, automaticky ho pridáme!
-        if (!dbData.users[currentUser]) {
-            dbData.users[currentUser] = {
-                name: currentUser,
-                joined: new Date().toISOString(),
-                rank: "Silver I"
-            };
-            dbData.inventories[currentUser] = [
-                { id: 1, name: "AK-47 | Redline", wear: "Field-Tested" },
-                { id: 2, name: "AWP | Asiimov", wear: "Well-Worn" }
-            ]; // Štartovacie skiny pre nováčika
-            await saveGistData();
-            console.log(`Nový hráč ${currentUser} bol automaticky zaregistrovaný do databázy.`);
-        }
+    
+    // Skontroluj či je už niekto prihlásený v localStorage
+    const savedUser = localStorage.getItem('gocounter_current_user');
+    if (savedUser && dbData.users[savedUser]) {
+        currentUser = savedUser;
+        viewedUser = currentUser;
+        showMainApp();
+    } else {
+        showAuthPage();
     }
-
-    initUI();
 });
 
-// Základné prepojenie UI (Home, Search, Trade)
-function initUI() {
-    // Tu môžeš vykresliť Home stránku
-    renderHome();
-
-    // Nastavenie vyhľadávača inventárov
-    const searchInput = document.getElementById('search-player');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            searchInventories(e.target.value);
-        });
-    }
-
-    // Naplnenie selectu pre Trade offers
-    populateTradeSelects();
-}
-
-// Home stránka - prehľad
-function renderHome() {
-    const homeDiv = document.getElementById('home-container');
-    if (homeDiv) {
-        const totalUsers = Object.keys(dbData.users).length;
-        homeDiv.innerHTML = `
-            <h2>Vitaj späť, ${currentUser}!</h2>
-            <p>Sme pripravení na obchody. Na platforme je zaregistrovaných <b>${totalUsers}</b> hráčov.</p>
-            <div class="stats-box">
-                <p>Tvoj inventár obsahuje: ${dbData.inventories[currentUser] ? dbData.inventories[currentUser].length : 0} skinov.</p>
-            </div>
-        `;
-    }
-}
-
-// Vyhľadávanie hráčov a ich inventárov
-function searchInventories(query) {
-    const resultsDiv = document.getElementById('search-results');
-    if (!resultsDiv) return;
-
-    resultsDiv.innerHTML = '';
-    const lowerQuery = query.toLowerCase();
-
-    for (let username in dbData.users) {
-        if (username.toLowerCase().includes(lowerQuery)) {
-            const userBox = document.createElement('div');
-            userBox.className = 'player-card';
-            userBox.innerHTML = `
-                <h3>${username}</h3>
-                <button onclick="viewInventory('${username}')">Zobraziť inventár</button>
-            `;
-            resultsDiv.appendChild(userBox);
-        }
-    }
-}
-
-// Zobrazenie inventáru konkrétneho hráča
-window.viewInventory = function(username) {
-    const invDiv = document.getElementById('target-inventory');
-    if (!invDiv) return;
-
-    const items = dbData.inventories[username] || [];
-    let html = `<h3>Inventár hráča: ${username}</h3><ul>`;
-    items.forEach((item, index) => {
-        html += `<li>${item.name} (${item.wear}) <button onclick="sendTradeOffer('${username}', ${index})">Poslať ponuku</button></li>`;
-    });
-    html += `</ul>`;
-    invDiv.innerHTML = html;
-};
-
-// Naplnenie výberu pre Trade
-function populateTradeSelects() {
-    const select = document.getElementById('trade-target-select');
-    if (!select) return;
-
-    select.innerHTML = '<option value="">-- Vyber hráča na trade --</option>';
-    for (let username in dbData.users) {
-        if (username !== currentUser) {
-            select.innerHTML += `<option value="${username}">${username}</option>`;
-        }
-    }
-}
-
-// Odoslanie Trade Offer
-window.sendTradeOffer = async function(targetUser, itemIndex) {
-    const skin = dbData.inventories[currentUser][itemIndex];
+// Prepínanie stránok / zobrazení
+window.showPage = function(pageName) {
+    activePage = pageName;
+    document.querySelectorAll('.navbar .nav-links a').forEach(a => a.classList.remove('active'));
     
-    dbData.trades.push({
-        from: currentUser,
-        to: targetUser,
-        item: skin,
-        status: "pending",
-        date: new Date().toISOString()
-    });
+    document.getElementById('page-profile').style.display = 'none';
+    document.getElementById('page-inventory').style.display = 'none';
+    document.getElementById('page-trades').style.display = 'none';
+    document.getElementById('page-players').style.display = 'none';
+
+    if (pageName === 'profile') {
+        document.getElementById('page-profile').style.display = 'block';
+        document.getElementById('nav-profile').classList.add('active');
+        renderProfile(viewedUser || currentUser);
+    } else if (pageName === 'inventory') {
+        document.getElementById('page-inventory').style.display = 'block';
+        document.getElementById('nav-inventory').classList.add('active');
+        renderSingleInventory(viewedUser || currentUser);
+    } else if (pageName === 'trades') {
+        document.getElementById('page-trades').style.display = 'block';
+        document.getElementById('nav-trades').classList.add('active');
+        renderTradesPage();
+    } else if (pageName === 'players') {
+        document.getElementById('page-players').style.display = 'block';
+        document.getElementById('nav-players').classList.add('active');
+        renderPlayersList();
+    }
+}
+
+function showAuthPage() {
+    document.getElementById('page-auth').style.display = 'flex';
+    document.getElementById('page-profile').style.display = 'none';
+    document.getElementById('page-inventory').style.display = 'none';
+    document.getElementById('page-trades').style.display = 'none';
+    document.getElementById('page-players').style.display = 'none';
+    document.querySelector('.navbar').style.display = 'none';
+}
+
+function showMainApp() {
+    document.getElementById('page-auth').style.display = 'none';
+    document.querySelector('.navbar').style.display = 'flex';
+    document.getElementById('nav-user-area').style.display = 'flex';
+    document.getElementById('nav-username').innerText = currentUser;
+    showPage('profile');
+}
+
+// ----------------- AUTENTIFIKÁCIA -----------------
+window.handleRegister = async function() {
+    const user = document.getElementById('reg-user').value.trim();
+    const steamid = document.getElementById('reg-steamid').value.trim();
+    const pass = document.getElementById('reg-pass').value;
+
+    if (!user || !pass || !steamid) {
+        alert("Vyplň všetky políčka pre registráciu!");
+        return;
+    }
+
+    dbData = await loadGistData();
+    if (dbData.users[user]) {
+        alert("Používateľ s týmto menom už existuje!");
+        return;
+    }
+
+    dbData.users[user] = {
+        name: user,
+        steamid: steamid,
+        password: pass,
+        bio: "GO:COUNTER Community Member",
+        joined: new Date().toISOString()
+    };
+    dbData.inventories[user] = []; // Prázdny inventár na začiatok
 
     const success = await saveGistData();
     if (success) {
-        alert(`Trade offer úspešne odoslaný hráčovi ${targetUser}!`);
+        currentUser = user;
+        viewedUser = currentUser;
+        localStorage.setItem('gocounter_current_user', currentUser);
+        showMainApp();
     } else {
-        alert("Chyba pri odosielaní trade offeru.");
+        alert("Chyba pri ukladaní na GitHub.");
     }
-};
+}
+
+window.handleLogin = async function() {
+    const user = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const errBox = document.getElementById('auth-error');
+
+    dbData = await loadGistData();
+    if (!dbData.users[user] || dbData.users[user].password !== pass) {
+        errBox.style.display = 'block';
+        errBox.innerText = 'Nesprávne meno alebo heslo!';
+        return;
+    }
+
+    errBox.style.display = 'none';
+    currentUser = user;
+    viewedUser = currentUser;
+    localStorage.setItem('gocounter_current_user', currentUser);
+    showMainApp();
+}
+
+window.logout = function() {
+    localStorage.removeItem('gocounter_current_user');
+    currentUser = null;
+    viewedUser = null;
+    showAuthPage();
+}
+
+// ----------------- PROFIL HRÁČA -----------------
+function renderProfile(username) {
+    const user = dbData.users[username];
+    if (!user) return;
+
+    viewedUser = username;
+    document.getElementById('prof-username').innerText = user.name;
+    document.getElementById('prof-steamid').innerText = user.steamid || 'N/A';
+    document.getElementById('prof-bio').innerText = user.bio || 'No information given.';
+    
+    const items = dbData.inventories[username] || [];
+    document.getElementById('stat-items-count').innerText = items.length;
+    document.getElementById('side-inv-count').innerText = items.length;
+
+    // Zobrazenie sync boxu iba ak pozerám svoj vlastný profil
+    const syncBox = document.getElementById('my-sync-box');
+    const tradeBtnArea = document.getElementById('prof-trade-btn-area');
+
+    if (username === currentUser) {
+        syncBox.style.display = 'block';
+        tradeBtnArea.innerHTML = '';
+    } else {
+        syncBox.style.display = 'none';
+        tradeBtnArea.innerHTML = `<button onclick="startTradeWith('${username}')" class="btn-steam btn-green" style="margin-top:15px; width:100%;">Trade with ${username}</button>`;
+    }
+}
+
+// ----------------- INVENTORY SYNC (inventory.txt) -----------------
+window.uploadInventoryFile = async function() {
+    const fileInput = document.getElementById('inv-file-input');
+    if (fileInput.files.length === 0) {
+        alert("Najskôr vyber súbor inventory.txt!");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+
+    reader.onload = async function(e) {
+        const text = e.target.result;
+        const parsedItems = parseInventoryTxt(text);
+
+        dbData = await loadGistData();
+        dbData.inventories[currentUser] = parsedItems;
+        const success = await saveGistData();
+
+        if (success) {
+            alert(`Úspešne nahraných ${parsedItems.length} položiek do inventáru!`);
+            renderProfile(currentUser);
+        } else {
+            alert("Chyba pri ukladaní inventáru na GitHub.");
+        }
+    };
+    reader.readAsText(file);
+}
+
+// Parser pre formát inventory.txt z csgo_gc
+function parseInventoryTxt(content) {
+    const lines = content.split('\n');
+    const items = [];
+    let idCounter = 1;
+
+    for (let line of lines) {
+        line = line.trim();
+        if (!line || line.startsWith('//') || line.startsWith('#')) continue;
+        
+        // Jednoduché parsovanie riadkov v štýle defindex / weapon / atď.
+        items.push({
+            id: idCounter++,
+            raw: line,
+            name: `Item (${line.substring(0, 30)})`
+        });
+    }
+    return items;
+}
+
+window.downloadUpdatedInventory = function() {
+    const items = dbData.inventories[currentUser] || [];
+    let fileContent = `// Updated inventory for csgo_gc\n// Generated by GO:COUNTER\n\n`;
+    items.forEach(item => {
+        fileContent += `${item.raw}\n`;
+    });
+
+    const blob = new Blob([fileContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inventory.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// ----------------- INVENTÁR A ZOBRAZENIE -----------------
+window.openUserInventory = function(username) {
+    viewedUser = username;
+    showPage('inventory');
+}
+
+function renderSingleInventory(username) {
+    const grid = document.getElementById('single-inv-grid');
+    const title = document.getElementById('inv-title');
+    const splitView = document.getElementById('trade-split-view');
+    const singleView = document.getElementById('single-inv-view');
+    const sendBtn = document.getElementById('send-trade-submit');
+
+    splitView.style.display = 'none';
+    singleView.style.display = 'block';
+    sendBtn.style.display = 'none';
+
+    title.innerText = `Inventory of ${username}`;
+    const items = dbData.inventories[username] || [];
+    
+    grid.innerHTML = '';
+    if (items.length === 0) {
+        grid.innerHTML = '<p style="color:#8f98a0; padding:20px;">Tento hráč nemá žiadne položky v inventári.</p>';
+        return;
+    }
+
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.style.cssText = 'background:#222; border:1px solid #444; padding:10px; border-radius:4px; text-align:center;';
+        card.innerHTML = `
+            <div style="color:#fff; font-weight:bold; font-size:13px; margin-bottom:5px;">Skin #${item.id}</div>
+            <div style="color:#d
