@@ -22,6 +22,8 @@ body {
     padding: 0 30px;
     border-bottom: 1px solid #000;
     box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    position: relative;
+    z-index: 100;
 }
 
 .nav-links {
@@ -166,6 +168,9 @@ body {
     text-decoration: none;
     display: inline-block;
     border-radius: 2px;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto !important;
 }
 
 .btn-steam:hover {
@@ -202,6 +207,8 @@ body {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid #22262d;
     margin-bottom: 20px;
+    position: relative;
+    z-index: 5;
 }
 
 .showcase-header {
@@ -275,6 +282,8 @@ body {
     cursor: pointer;
     transition: transform 0.1s, border-color 0.1s;
     user-select: none;
+    border-radius: 2px;
+    overflow: hidden;
 }
 
 .item-card:hover {
