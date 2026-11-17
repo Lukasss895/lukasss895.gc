@@ -51,6 +51,14 @@ window.logout=function(){localStorage.removeItem('gc_token');TOKEN='';me=null;vi
 
 function renderProfile(sid){const u=db.users[sid];if(!u)return;viewed=sid;
   $('prof-username').textContent=u.name;$('prof-steamid').textContent=u.sid;$('prof-bio').textContent='Joined: '+(u.joined||'').slice(0,10);
+  
+  // Dynamické načítanie levelu a statusu z Workera / databázy
+  const levelEl = $('prof-level');
+  if (levelEl) levelEl.textContent = u.level || 1;
+
+  const statusEl = $('prof-status');
+  if (statusEl) statusEl.textContent = u.status || 'Online';
+
   if(u.avatar)$('prof-avatar').src=u.avatar;$('stat-items-count').textContent=items(sid).length;$('side-inv-count').textContent=items(sid).length;
   $('my-sync-box').style.display=sid===me?'block':'none';
   $('prof-trade-btn-area').innerHTML=sid===me?'':`<button onclick="startTradeWith('${esc(sid)}')" class="btn-steam btn-green" style="margin-top:15px;width:100%">Trade with ${esc(u.name)}</button>`}
