@@ -1,4 +1,4 @@
-const API = 'https://gocounter.jozkobukva6.workers.dev'; // adresa tvojho Workera (bez / na konci)
+const API = 'https://gocounter.jozkobukva6.workers.dev'; // adresa tvojho Workera
 
 // ==PURE==
 const WEAPONS={1:'Desert Eagle',2:'Dual Berettas',3:'Five-SeveN',4:'Glock-18',7:'AK-47',8:'AUG',9:'AWP',10:'FAMAS',11:'G3SG1',13:'Galil AR',14:'M249',16:'M4A4',17:'MAC-10',19:'P90',24:'UMP-45',25:'XM1014',26:'PP-Bizon',27:'MAG-7',28:'Negev',29:'Sawed-Off',30:'Tec-9',31:'Zeus x27',32:'P2000',33:'MP7',34:'MP9',35:'Nova',36:'P250',38:'SCAR-20',39:'SG 553',40:'SSG 08',60:'M4A1-S',61:'USP-S',63:'CZ75-Auto',64:'R8 Revolver'};
@@ -56,7 +56,7 @@ function renderProfile(sid){const u=db.users[sid];if(!u)return;viewed=sid;
   $('prof-trade-btn-area').innerHTML=sid===me?'':`<button onclick="startTradeWith('${esc(sid)}')" class="btn-steam btn-green" style="margin-top:15px;width:100%">Trade with ${esc(u.name)}</button>`}
 
 window.uploadInventoryFile=function(){const f=$('inv-file-input').files[0];if(!f)return alert('Najskôr vyber súbor inventory.txt!');
-  const r=new FileReader();r.onload=async e=>{const inv=buildInv(e.target.result);if(!inv)return alert('V súbore som nenašiel žiadne predmety. Pošli ukážku súboru, upravím čítanie.');
+  const r=new FileReader();r.onload=async e=>{const inv=buildInv(e.target.result);if(!inv)return alert('V súbore som nenašiel žiadne predmety.');
     const res=await api('/api/inventory',{inv});if(res.error)return alert('Chyba: '+res.error);await refresh();alert('Nahraných predmetov: '+res.count);renderProfile(me)};r.readAsText(f)};
 window.downloadUpdatedInventory=function(){const inv=db.inventories[me];if(!inv)return alert('Najprv nahraj inventory.txt.');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([serInv(inv)],{type:'text/plain'}));a.download='inventory.txt';document.body.appendChild(a);a.click();a.remove()};
@@ -84,7 +84,7 @@ function renderTradesPage(){const L=$('trades-list');L.innerHTML='';const ts=db.
     if(t.status==='pending'){const r=document.createElement('div');r.style.cssText='display:flex;gap:10px';
       const mk=(txt,act,cls)=>{const x=document.createElement('button');x.className='btn-steam '+cls;x.textContent=txt;x.onclick=()=>respondTrade(t.id,act);r.appendChild(x)};
       if(t.to===me){mk('Accept Trade','accept','btn-green');mk('Decline','decline','')}else mk('Cancel','cancel','');b.appendChild(r)}L.appendChild(b)})}
-window.respondTrade=async function(id,act){const r=await api('/api/trade/act',{id,act});if(r.error)alert(r.error);else if(act==='accept')alert('Trade prijatý! Teraz si na profile stiahni Download Updated inventory.txt a vymeň ním súbor v csgo_gc.');
+window.respondTrade=async function(id,act){const r=await api('/api/trade/act',{id,act});if(r.error)alert(r.error);else if(act==='accept')alert('Trade prijatý!');
   await refresh();showMainApp();showPage('trades')};
 function renderPlayersList(){const L=$('players-list');L.innerHTML='';Object.values(db.users).forEach(u=>{const c=document.createElement('div');c.className='showcase-box';c.style.cssText='padding:15px;text-align:center';
   c.innerHTML=`<div style="font-weight:bold;color:#fff;font-size:15px;margin-bottom:5px">${esc(u.name)}</div><div style="color:#8f98a0;font-size:12px;margin-bottom:12px">Items: ${items(u.sid).length}</div><button onclick="viewPlayerProfile('${esc(u.sid)}')" class="btn-steam" style="width:100%;font-size:12px">View Profile</button>`;L.appendChild(c)})}
