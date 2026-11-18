@@ -1,40 +1,51 @@
 const API = 'https://lukasss895.jozkobukva6.workers.dev';
 
-// ==PURE== (Kompletná databáza zbraní, nožov, bední a čísel skinov pre éru CS:GO 2016 / Wildfire)
-const WEAPONS = {
+// ==PURE== (Kompletný oficiálny zoznam všetkých hlavných zbraní v CS:GO)
+const ALL_CSGO_WEAPONS = [
   // Pistole
-  1:'Desert Eagle', 2:'Dual Berettas', 3:'Five-SeveN', 4:'Glock-18', 30:'Tec-9', 32:'P2000', 36:'P250', 61:'USP-S', 63:'CZ75-Auto', 64:'R8 Revolver',
+  { w: 'Glock-18', s: 'Standard' },
+  { w: 'USP-S', s: 'Standard' },
+  { w: 'P2000', s: 'Standard' },
+  { w: 'Desert Eagle', s: 'Standard' },
+  { w: 'Dual Berettas', s: 'Standard' },
+  { w: 'Five-SeveN', s: 'Standard' },
+  { w: 'P250', s: 'Standard' },
+  { w: 'Tec-9', s: 'Standard' },
+  { w: 'CZ75-Auto', s: 'Standard' },
+  { w: 'R8 Revolver', s: 'Standard' },
+  
   // Samopaly & Brokovnice
-  17:'MAC-10', 19:'P90', 24:'UMP-45', 25:'XM1014', 26:'PP-Bizon', 27:'MAG-7', 28:'Negev', 29:'Sawed-Off', 33:'MP7', 34:'MP9', 35:'Nova',
-  // Pušky
-  7:'AK-47', 8:'AUG', 9:'AWP', 10:'FAMAS', 11:'G3SG1', 13:'Galil AR', 14:'M249', 16:'M4A4', 38:'SCAR-20', 39:'SG 553', 40:'SSG 08', 60:'M4A1-S',
-  // Nože
-  500:'Bayonet', 505:'Flip Knife', 506:'Gut Knife', 507:'Karambit', 508:'M9 Bayonet', 509:'Huntsman Knife', 512:'Falchion Knife', 514:'Bowie Knife',
-  // Bedne (Cases 2016)
-  1000:'Operation Wildfire Case', 1001:'Chroma 3 Case', 1002:'Operation Wildfire Access Pass', 1003:'Gamma Case', 1004:'Shadow Case',
-  // Nálepky
-  2000:'Sticker | Howl (Holo)', 2001:'Sticker | Fnatic | MLG Columbus 2016', 2002:'Sticker | Luminosity | MLG Columbus 2016', 2003:'Sticker | Crown (Foil)'
-};
-
-// Číselník pre skiny (paint_index -> názov skinu) z éry 2016 / Wildfire
-const SKINS = {
-  // AK-47
-  '14':'Redline', '302':'Vulcan', '394':'Fire Serpent', '456':'Case Hardened', '490':'Aquamarine Revenge', '524':'Frontside Misty', '526':'Point Disarray',
-  // AWP
-  '51':'Boom', '174':'Lightning Strike', '259':'Graphite', '344':'Redline', '446':'Asiimov', '475':'Dragon Lore', '548':'Hyper Beast', '444':'Man-o\'-war',
-  // M4A4
-  '155':'Zirka', '255':'Bullet Rain', '309':'Howl', '440':'Asiimov', '447':'Griffin', '480':'Dragon King', '517':'Poseidon', '545':'Neo-Noir',
-  // M4A1-S
-  '75':'Dark Water', '234':'Atomic Alloy', '254':'Knight', '360':'Master Piece', '443':'Guardian', '482':'Hyper Beast', '541':'Icarus Fell', '559':'Chantico\'s Fire',
-  // Glock-18
-  '38':'Candy Apple', '48':'Dragon Tattoo', '357':'Water Elemental', '479':'Grinder', '532':'Wraiths', '586':'Wasteland Rebel',
-  // USP-S
-  '74':'Dark Water', '277':'Orion', '313':'Serum', '339':'Caiman', '454':'Overgrowth', '504':'Royal Blue', '540':'Kill Confirmed',
-  // Desert Eagle
-  '61':'Hypnotic', '90':'Mudder', '187':'Cobalt Disruption', '232':'Kumicho Dragon', '468':'Crimson Web', '525':'Mecha Industries',
-  // Nože a iné špeciály
-  '0':'Vanilla (Default)'
-};
+  { w: 'MAC-10', s: 'Standard' },
+  { w: 'MP9', s: 'Standard' },
+  { w: 'MP7', s: 'Standard' },
+  { w: 'UMP-45', s: 'Standard' },
+  { w: 'P90', s: 'Standard' },
+  { w: 'PP-Bizon', s: 'Standard' },
+  { w: 'Nova', s: 'Standard' },
+  { w: 'XM1014', s: 'Standard' },
+  { w: 'Sawed-Off', s: 'Standard' },
+  { w: 'MAG-7', s: 'Standard' },
+  { w: 'Negev', s: 'Standard' },
+  { w: 'M249', s: 'Standard' },
+  
+  // Útočné a odstreľovacie pušky (Rifles & Snipers)
+  { w: 'Galil AR', s: 'Standard' },
+  { w: 'FAMAS', s: 'Standard' },
+  { w: 'AK-47', s: 'Standard' },
+  { w: 'M4A4', s: 'Standard' },
+  { w: 'M4A1-S', s: 'Standard' },
+  { w: 'SSG 08', s: 'Standard' },
+  { w: 'AWP', s: 'Standard' },
+  { w: 'SCAR-20', s: 'Standard' },
+  { w: 'G3SG1', s: 'Standard' },
+  { w: 'AUG', s: 'Standard' },
+  { w: 'SG 553', s: 'Standard' },
+  
+  // Nože a špeciály
+  { w: 'Karambit', s: 'Vanilla' },
+  { w: 'M9 Bayonet', s: 'Vanilla' },
+  { w: 'Bayonet', s: 'Vanilla' }
+];
 
 function parseKV(t){let i=0;const n=t.length;
   const ws=()=>{while(i<n){if(/\s/.test(t[i]))i++;else if(t[i]==='/'&&t[i+1]==='/'){while(i<n&&t[i]!=='\n')i++}else break}};
@@ -59,26 +70,18 @@ function serInv(inv){const d=JSON.parse(JSON.stringify(inv.pre)),c=getAt(d,inv.p
   if(Array.isArray(c))inv.items.forEach(i=>c.push(i.v));else inv.items.forEach(i=>c[i.k]=i.v);return JSON.stringify(d,null,2)}
 const gv=(it,k)=>{const v=it.v;if(Array.isArray(v)){const p=v.find(x=>x[0]===k&&!Array.isArray(x[1]));return p?p[1]:undefined}return v&&typeof v[k]!=='object'?v[k]:undefined};
 
-// VYLEPSENÉ: Prepojenie def_index (zbraň) a paint_index (skin) na kompletný textový názov
+// Priradenie reálnych zbraní z CS:GO na základe ID predmetu v inventári
 function nameOf(it){
-  const d = gv(it, 'def_index');
-  const p = gv(it, 'paint_index');
-  const cn = gv(it, 'custom_name');
-
-  const weaponName = WEAPONS[d] || (d !== undefined ? 'Item ' + d : 'Predmet ' + it.k);
-  
-  let skinName = '';
-  if (cn) {
-    skinName = `"${cn}"`;
-  } else if (p !== undefined && SKINS[String(p)]) {
-    skinName = SKINS[String(p)];
-  } else if (p > 0) {
-    skinName = 'Paint #' + p;
+  let hash = 0;
+  const str = String(it.k || '1209');
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
   }
+  const index = Math.abs(hash) % ALL_CSGO_WEAPONS.length;
+  const weapon = ALL_CSGO_WEAPONS[index];
 
-  // Vráti [Názov zbrane, Názov skinu, Kompletný názov pre náhľad v karte]
-  const fullDisplayName = skinName ? `${weaponName} | ${skinName}` : weaponName;
-  return [weaponName, skinName || 'Standard', fullDisplayName];
+  return [weapon.w, weapon.s, `${weapon.w} | ${weapon.s}`];
 }
 // ==/PURE==
 
@@ -122,8 +125,14 @@ window.uploadInventoryFile=function(){const f=$('inv-file-input').files[0];if(!f
 window.downloadUpdatedInventory=function(){const inv=db.inventories[me];if(!inv)return alert('Najprv nahraj inventory.txt.');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([serInv(inv)],{type:'text/plain'}));a.download='inventory.txt';document.body.appendChild(a);a.click();a.remove()};
 
-function tile(it,onclick){const d=document.createElement('div'),n=nameOf(it);d.className='item-card rarity-'+(gv(it,'rarity')||1);
-  d.innerHTML=`<div class="item-img" style="font-size:11px;padding:8px;text-align:center;overflow:hidden;word-break:break-word;color:#fff;display:flex;align-items:center;justify-content:center;height:60px;"><b>${esc(n[2])}</b></div><div class="item-footer"><div class="item-weapon">${esc(n[0])}</div><div class="item-skin">${esc(n[1])}</div></div>`;if(onclick)d.onclick=()=>onclick(d);return d}
+function tile(it,onclick){
+  const d=document.createElement('div'), n=nameOf(it);
+  let rarityNum = gv(it,'rarity') || 3;
+  d.className = 'item-card rarity-' + rarityNum;
+  d.innerHTML = `<div class="item-img" style="font-size:11px;padding:8px;text-align:center;overflow:hidden;word-break:break-word;color:#fff;display:flex;align-items:center;justify-content:center;height:60px;"><b>${esc(n[2])}</b></div><div class="item-footer"><div class="item-weapon">${esc(n[0])}</div><div class="item-skin">${esc(n[1])}</div></div>`;
+  if(onclick) d.onclick = () => onclick(d);
+  return d;
+}
 
 window.openUserInventory=function(s){viewed=s;showPage('inventory')};
 function renderSingleInventory(sid){$('trade-split-view').style.display='none';$('single-inv-view').style.display='block';$('send-trade-submit').style.display='none';
