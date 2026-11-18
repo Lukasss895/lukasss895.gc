@@ -1,7 +1,21 @@
 const API = 'https://lukasss895.jozkobukva6.workers.dev';
 
-// ==PURE==
-const WEAPONS={1:'Desert Eagle',2:'Dual Berettas',3:'Five-SeveN',4:'Glock-18',7:'AK-47',8:'AUG',9:'AWP',10:'FAMAS',11:'G3SG1',13:'Galil AR',14:'M249',16:'M4A4',17:'MAC-10',19:'P90',24:'UMP-45',25:'XM1014',26:'PP-Bizon',27:'MAG-7',28:'Negev',29:'Sawed-Off',30:'Tec-9',31:'Zeus x27',32:'P2000',33:'MP7',34:'MP9',35:'Nova',36:'P250',38:'SCAR-20',39:'SG 553',40:'SSG 08',60:'M4A1-S',61:'USP-S',63:'CZ75-Auto',64:'R8 Revolver'};
+// ==PURE== (Rozšírené o nože, bedne, nálepky a tematiku CS:GO 2016 / Operation Wildfire)
+const WEAPONS={
+  // Pistole
+  1:'Desert Eagle',2:'Dual Berettas',3:'Five-SeveN',4:'Glock-18',30:'Tec-9',32:'P2000',36:'P250',61:'USP-S',63:'CZ75-Auto',64:'R8 Revolver',
+  // Samopaly & Brokovnice
+  17:'MAC-10',19:'P90',24:'UMP-45',25:'XM1014',26:'PP-Bizon',27:'MAG-7',28:'Negev',29:'Sawed-Off',33:'MP7',34:'MP9',35:'Nova',
+  // Pušky
+  7:'AK-47',8:'AUG',9:'AWP',10:'FAMAS',11:'G3SG1',13:'Galil AR',14:'M249',16:'M4A4',38:'SCAR-20',39:'SG 553',40:'SSG 08',60:'M4A1-S',
+  // Nože (Operation Wildfire era & klasika)
+  500:'Bayonet',505:'Flip Knife',506:'Gut Knife',507:'Karambit',508:'M9 Bayonet',509:'Huntsman Knife',512:'Falchion Knife',514:'Bowie Knife',
+  // Bedne (Cases z obdobia 2016 / Wildfire)
+  1000:'Operation Wildfire Case',1001:'Chroma 3 Case',1002:'Operation Wildfire Access Pass',1003:'Gamma Case',1004:'Shadow Case',
+  // Nálepky (Stickers)
+  2000:'Sticker | Howl (Holo)',2001:'Sticker | Fnatic | MLG Columbus 2016',2002:'Sticker | Luminosity Gaming | MLG Columbus 2016',2003:'Sticker | Crown (Foil)'
+};
+
 function parseKV(t){let i=0;const n=t.length;
   const ws=()=>{while(i<n){if(/\s/.test(t[i]))i++;else if(t[i]==='/'&&t[i+1]==='/'){while(i<n&&t[i]!=='\n')i++}else break}};
   const tok=()=>{ws();if(i>=n)return null;const c=t[i];if(c==='{'||c==='}'){i++;return c}
@@ -25,13 +39,12 @@ function serInv(inv){const d=JSON.parse(JSON.stringify(inv.pre)),c=getAt(d,inv.p
   if(Array.isArray(c))inv.items.forEach(i=>c.push(i.v));else inv.items.forEach(i=>c[i.k]=i.v);return JSON.stringify(d,null,2)}
 const gv=(it,k)=>{const v=it.v;if(Array.isArray(v)){const p=v.find(x=>x[0]===k&&!Array.isArray(x[1]));return p?p[1]:undefined}return v&&typeof v[k]!=='object'?v[k]:undefined};
 
-// OPRAVENÉ: Celé názvy zbraní a skinov bez orezávania
+// Zabezpečí vypísanie celého názvu zbrane, noža, bedne či nálepky a skinu
 function nameOf(it){
   const d=gv(it,'def_index'),p=gv(it,'paint_index'),cn=gv(it,'custom_name');
-  const weaponName = WEAPONS[d] || (d !== undefined ? 'Item ' + d : 'Predmet ' + it.k);
+  const itemName = WEAPONS[d] || (d !== undefined ? 'Item ' + d : 'Predmet ' + it.k);
   const skinDesc = cn ? `"${cn}"` : (p ? 'Paint #' + p : '');
-  // Vráti [Hlavný názov zbrane, Skin/Popis, Celý názov do náhľadu namiesto skratky]
-  return [weaponName, skinDesc, weaponName];
+  return [itemName, skinDesc, itemName];
 }
 // ==/PURE==
 
@@ -76,8 +89,7 @@ window.downloadUpdatedInventory=function(){const inv=db.inventories[me];if(!inv)
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([serInv(inv)],{type:'text/plain'}));a.download='inventory.txt';document.body.appendChild(a);a.click();a.remove()};
 
 function tile(it,onclick){const d=document.createElement('div'),n=nameOf(it);d.className='item-card rarity-'+(gv(it,'rarity')||1);
-  // Zobrazenie celého názvu v strede karty namiesto skratky
-  d.innerHTML=`<div class="item-img" style="font-size:13px;padding:10px;text-align:center;overflow:hidden;word-break:break-all;">${esc(n[2])}</div><div class="item-footer"><div class="item-weapon">${esc(n[0])}</div><div class="item-skin">${esc(n[1])||'&nbsp;'}</div></div>`;if(onclick)d.onclick=()=>onclick(d);return d}
+  d.innerHTML=`<div class="item-img" style="font-size:12px;padding:10px;text-align:center;overflow:hidden;word-break:break-all;color:#fff;">${esc(n[2])}</div><div class="item-footer"><div class="item-weapon">${esc(n[0])}</div><div class="item-skin">${esc(n[1])||'&nbsp;'}</div></div>`;if(onclick)d.onclick=()=>onclick(d);return d}
 window.openUserInventory=function(s){viewed=s;showPage('inventory')};
 function renderSingleInventory(sid){$('trade-split-view').style.display='none';$('single-inv-view').style.display='block';$('send-trade-submit').style.display='none';
   $('inv-title').textContent='Inventory of '+uname(sid);renderInventoryPage()}
