@@ -1,19 +1,39 @@
 const API = 'https://lukasss895.jozkobukva6.workers.dev';
 
-// ==PURE== (Rozšírené o nože, bedne, nálepky a tematiku CS:GO 2016 / Operation Wildfire)
-const WEAPONS={
+// ==PURE== (Kompletná databáza zbraní, nožov, bední a čísel skinov pre éru CS:GO 2016 / Wildfire)
+const WEAPONS = {
   // Pistole
-  1:'Desert Eagle',2:'Dual Berettas',3:'Five-SeveN',4:'Glock-18',30:'Tec-9',32:'P2000',36:'P250',61:'USP-S',63:'CZ75-Auto',64:'R8 Revolver',
+  1:'Desert Eagle', 2:'Dual Berettas', 3:'Five-SeveN', 4:'Glock-18', 30:'Tec-9', 32:'P2000', 36:'P250', 61:'USP-S', 63:'CZ75-Auto', 64:'R8 Revolver',
   // Samopaly & Brokovnice
-  17:'MAC-10',19:'P90',24:'UMP-45',25:'XM1014',26:'PP-Bizon',27:'MAG-7',28:'Negev',29:'Sawed-Off',33:'MP7',34:'MP9',35:'Nova',
+  17:'MAC-10', 19:'P90', 24:'UMP-45', 25:'XM1014', 26:'PP-Bizon', 27:'MAG-7', 28:'Negev', 29:'Sawed-Off', 33:'MP7', 34:'MP9', 35:'Nova',
   // Pušky
-  7:'AK-47',8:'AUG',9:'AWP',10:'FAMAS',11:'G3SG1',13:'Galil AR',14:'M249',16:'M4A4',38:'SCAR-20',39:'SG 553',40:'SSG 08',60:'M4A1-S',
-  // Nože (Operation Wildfire era & klasika)
-  500:'Bayonet',505:'Flip Knife',506:'Gut Knife',507:'Karambit',508:'M9 Bayonet',509:'Huntsman Knife',512:'Falchion Knife',514:'Bowie Knife',
-  // Bedne (Cases z obdobia 2016 / Wildfire)
-  1000:'Operation Wildfire Case',1001:'Chroma 3 Case',1002:'Operation Wildfire Access Pass',1003:'Gamma Case',1004:'Shadow Case',
-  // Nálepky (Stickers)
-  2000:'Sticker | Howl (Holo)',2001:'Sticker | Fnatic | MLG Columbus 2016',2002:'Sticker | Luminosity Gaming | MLG Columbus 2016',2003:'Sticker | Crown (Foil)'
+  7:'AK-47', 8:'AUG', 9:'AWP', 10:'FAMAS', 11:'G3SG1', 13:'Galil AR', 14:'M249', 16:'M4A4', 38:'SCAR-20', 39:'SG 553', 40:'SSG 08', 60:'M4A1-S',
+  // Nože
+  500:'Bayonet', 505:'Flip Knife', 506:'Gut Knife', 507:'Karambit', 508:'M9 Bayonet', 509:'Huntsman Knife', 512:'Falchion Knife', 514:'Bowie Knife',
+  // Bedne (Cases 2016)
+  1000:'Operation Wildfire Case', 1001:'Chroma 3 Case', 1002:'Operation Wildfire Access Pass', 1003:'Gamma Case', 1004:'Shadow Case',
+  // Nálepky
+  2000:'Sticker | Howl (Holo)', 2001:'Sticker | Fnatic | MLG Columbus 2016', 2002:'Sticker | Luminosity | MLG Columbus 2016', 2003:'Sticker | Crown (Foil)'
+};
+
+// Číselník pre skiny (paint_index -> názov skinu) z éry 2016 / Wildfire
+const SKINS = {
+  // AK-47
+  '14':'Redline', '302':'Vulcan', '394':'Fire Serpent', '456':'Case Hardened', '490':'Aquamarine Revenge', '524':'Frontside Misty', '526':'Point Disarray',
+  // AWP
+  '51':'Boom', '174':'Lightning Strike', '259':'Graphite', '344':'Redline', '446':'Asiimov', '475':'Dragon Lore', '548':'Hyper Beast', '444':'Man-o\'-war',
+  // M4A4
+  '155':'Zirka', '255':'Bullet Rain', '309':'Howl', '440':'Asiimov', '447':'Griffin', '480':'Dragon King', '517':'Poseidon', '545':'Neo-Noir',
+  // M4A1-S
+  '75':'Dark Water', '234':'Atomic Alloy', '254':'Knight', '360':'Master Piece', '443':'Guardian', '482':'Hyper Beast', '541':'Icarus Fell', '559':'Chantico\'s Fire',
+  // Glock-18
+  '38':'Candy Apple', '48':'Dragon Tattoo', '357':'Water Elemental', '479':'Grinder', '532':'Wraiths', '586':'Wasteland Rebel',
+  // USP-S
+  '74':'Dark Water', '277':'Orion', '313':'Serum', '339':'Caiman', '454':'Overgrowth', '504':'Royal Blue', '540':'Kill Confirmed',
+  // Desert Eagle
+  '61':'Hypnotic', '90':'Mudder', '187':'Cobalt Disruption', '232':'Kumicho Dragon', '468':'Crimson Web', '525':'Mecha Industries',
+  // Nože a iné špeciály
+  '0':'Vanilla (Default)'
 };
 
 function parseKV(t){let i=0;const n=t.length;
@@ -39,12 +59,26 @@ function serInv(inv){const d=JSON.parse(JSON.stringify(inv.pre)),c=getAt(d,inv.p
   if(Array.isArray(c))inv.items.forEach(i=>c.push(i.v));else inv.items.forEach(i=>c[i.k]=i.v);return JSON.stringify(d,null,2)}
 const gv=(it,k)=>{const v=it.v;if(Array.isArray(v)){const p=v.find(x=>x[0]===k&&!Array.isArray(x[1]));return p?p[1]:undefined}return v&&typeof v[k]!=='object'?v[k]:undefined};
 
-// Zabezpečí vypísanie celého názvu zbrane, noža, bedne či nálepky a skinu
+// VYLEPSENÉ: Prepojenie def_index (zbraň) a paint_index (skin) na kompletný textový názov
 function nameOf(it){
-  const d=gv(it,'def_index'),p=gv(it,'paint_index'),cn=gv(it,'custom_name');
-  const itemName = WEAPONS[d] || (d !== undefined ? 'Item ' + d : 'Predmet ' + it.k);
-  const skinDesc = cn ? `"${cn}"` : (p ? 'Paint #' + p : '');
-  return [itemName, skinDesc, itemName];
+  const d = gv(it, 'def_index');
+  const p = gv(it, 'paint_index');
+  const cn = gv(it, 'custom_name');
+
+  const weaponName = WEAPONS[d] || (d !== undefined ? 'Item ' + d : 'Predmet ' + it.k);
+  
+  let skinName = '';
+  if (cn) {
+    skinName = `"${cn}"`;
+  } else if (p !== undefined && SKINS[String(p)]) {
+    skinName = SKINS[String(p)];
+  } else if (p > 0) {
+    skinName = 'Paint #' + p;
+  }
+
+  // Vráti [Názov zbrane, Názov skinu, Kompletný názov pre náhľad v karte]
+  const fullDisplayName = skinName ? `${weaponName} | ${skinName}` : weaponName;
+  return [weaponName, skinName || 'Standard', fullDisplayName];
 }
 // ==/PURE==
 
@@ -89,7 +123,8 @@ window.downloadUpdatedInventory=function(){const inv=db.inventories[me];if(!inv)
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([serInv(inv)],{type:'text/plain'}));a.download='inventory.txt';document.body.appendChild(a);a.click();a.remove()};
 
 function tile(it,onclick){const d=document.createElement('div'),n=nameOf(it);d.className='item-card rarity-'+(gv(it,'rarity')||1);
-  d.innerHTML=`<div class="item-img" style="font-size:12px;padding:10px;text-align:center;overflow:hidden;word-break:break-all;color:#fff;">${esc(n[2])}</div><div class="item-footer"><div class="item-weapon">${esc(n[0])}</div><div class="item-skin">${esc(n[1])||'&nbsp;'}</div></div>`;if(onclick)d.onclick=()=>onclick(d);return d}
+  d.innerHTML=`<div class="item-img" style="font-size:11px;padding:8px;text-align:center;overflow:hidden;word-break:break-word;color:#fff;display:flex;align-items:center;justify-content:center;height:60px;"><b>${esc(n[2])}</b></div><div class="item-footer"><div class="item-weapon">${esc(n[0])}</div><div class="item-skin">${esc(n[1])}</div></div>`;if(onclick)d.onclick=()=>onclick(d);return d}
+
 window.openUserInventory=function(s){viewed=s;showPage('inventory')};
 function renderSingleInventory(sid){$('trade-split-view').style.display='none';$('single-inv-view').style.display='block';$('send-trade-submit').style.display='none';
   $('inv-title').textContent='Inventory of '+uname(sid);renderInventoryPage()}
@@ -104,7 +139,7 @@ window.startTradeWith=function(sid){if(!me)return;if(sid===me)return alert('Nem�
 window.submitTradeOffer=async function(){if(!selMine.length&&!selTheirs.length)return alert('Vyber aspoň jednu položku!');
   const r=await api('/api/trade',{to:target,give:selMine,get:selTheirs});if(r.error)return alert(r.error);await refresh();alert('Ponuka odoslaná!');showPage('trades')};
 function renderTradesPage(){const L=$('trades-list');L.innerHTML='';const ts=db.trades.slice().reverse();if(!ts.length){L.innerHTML='<p style="color:#8f98a0">Žiadne trade ponuky.</p>';return}
-  const nm=l=>l.map(i=>nameOf(i).slice(0,2).join(' ')).join(', ')||'nič';
+  const nm=l=>l.map(i=>nameOf(i).slice(0,2).join(' | ')).join(', ')||'nič';
   ts.forEach(t=>{const b=document.createElement('div');b.className='showcase-box';const col=t.status==='accepted'?'#a4d007':t.status==='pending'?'#66c0f4':'#eb4b4b';b.style.cssText='margin-bottom:15px;padding:15px;border-left:4px solid '+col;
     b.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:10px"><b style="color:#fff">${esc(uname(t.from))} → ${esc(uname(t.to))}</b><span style="color:${col}">${esc(t.status)}</span></div>
       <div style="color:#8f98a0;margin-bottom:12px"><b>${esc(uname(t.from))} dáva:</b> ${esc(nm(t.give))}<br><b>${esc(uname(t.to))} dáva:</b> ${esc(nm(t.get))}</div>`;
