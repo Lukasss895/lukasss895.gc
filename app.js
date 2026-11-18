@@ -1,4 +1,4 @@
-const API = 'https://lukasss895.jozkobukva6.workers.dev'; // tu musí byť presne tá adresa tvojho workera, ktorú si si vytvoril!
+const API = 'https://lukasss895.jozkobukva6.workers.dev';
 
 // ==PURE==
 const WEAPONS={1:'Desert Eagle',2:'Dual Berettas',3:'Five-SeveN',4:'Glock-18',7:'AK-47',8:'AUG',9:'AWP',10:'FAMAS',11:'G3SG1',13:'Galil AR',14:'M249',16:'M4A4',17:'MAC-10',19:'P90',24:'UMP-45',25:'XM1014',26:'PP-Bizon',27:'MAG-7',28:'Negev',29:'Sawed-Off',30:'Tec-9',31:'Zeus x27',32:'P2000',33:'MP7',34:'MP9',35:'Nova',36:'P250',38:'SCAR-20',39:'SG 553',40:'SSG 08',60:'M4A1-S',61:'USP-S',63:'CZ75-Auto',64:'R8 Revolver'};
@@ -24,8 +24,15 @@ function serInv(inv){const d=JSON.parse(JSON.stringify(inv.pre)),c=getAt(d,inv.p
   if(inv.format==='kv'){inv.items.forEach(i=>c.push([i.k,i.v]));return serKV(d)}
   if(Array.isArray(c))inv.items.forEach(i=>c.push(i.v));else inv.items.forEach(i=>c[i.k]=i.v);return JSON.stringify(d,null,2)}
 const gv=(it,k)=>{const v=it.v;if(Array.isArray(v)){const p=v.find(x=>x[0]===k&&!Array.isArray(x[1]));return p?p[1]:undefined}return v&&typeof v[k]!=='object'?v[k]:undefined};
-function nameOf(it){const d=gv(it,'def_index'),p=gv(it,'paint_index'),cn=gv(it,'custom_name');
-  const w=WEAPONS[d]||(d!==undefined?'Item '+d:'Predmet '+it.k);return[w,cn?`"${cn}"`:(p?'Paint #'+p:''),w.slice(0,3)]}
+
+// OPRAVENÉ: Celé názvy zbraní a skinov bez orezávania
+function nameOf(it){
+  const d=gv(it,'def_index'),p=gv(it,'paint_index'),cn=gv(it,'custom_name');
+  const weaponName = WEAPONS[d] || (d !== undefined ? 'Item ' + d : 'Predmet ' + it.k);
+  const skinDesc = cn ? `"${cn}"` : (p ? 'Paint #' + p : '');
+  // Vráti [Hlavný názov zbrane, Skin/Popis, Celý názov do náhľadu namiesto skratky]
+  return [weaponName, skinDesc, weaponName];
+}
 // ==/PURE==
 
 let TOKEN=localStorage.getItem('gc_token')||'',db={users:{},inventories:{},trades:[]},me=null,viewed=null,target=null,selMine=[],selTheirs=[];
@@ -52,7 +59,6 @@ window.logout=function(){localStorage.removeItem('gc_token');TOKEN='';me=null;vi
 function renderProfile(sid){const u=db.users[sid];if(!u)return;viewed=sid;
   $('prof-username').textContent=u.name;$('prof-steamid').textContent=u.sid;$('prof-bio').textContent='Joined: '+(u.joined||'').slice(0,10);
   
-  // Dynamické načítanie levelu a statusu z Workera / databázy
   const levelEl = $('prof-level');
   if (levelEl) levelEl.textContent = u.level || 1;
 
@@ -70,7 +76,8 @@ window.downloadUpdatedInventory=function(){const inv=db.inventories[me];if(!inv)
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([serInv(inv)],{type:'text/plain'}));a.download='inventory.txt';document.body.appendChild(a);a.click();a.remove()};
 
 function tile(it,onclick){const d=document.createElement('div'),n=nameOf(it);d.className='item-card rarity-'+(gv(it,'rarity')||1);
-  d.innerHTML=`<div class="item-img">${esc(n[2])}</div><div class="item-footer"><div class="item-weapon">${esc(n[0])}</div><div class="item-skin">${esc(n[1])||'&nbsp;'}</div></div>`;if(onclick)d.onclick=()=>onclick(d);return d}
+  // Zobrazenie celého názvu v strede karty namiesto skratky
+  d.innerHTML=`<div class="item-img" style="font-size:13px;padding:10px;text-align:center;overflow:hidden;word-break:break-all;">${esc(n[2])}</div><div class="item-footer"><div class="item-weapon">${esc(n[0])}</div><div class="item-skin">${esc(n[1])||'&nbsp;'}</div></div>`;if(onclick)d.onclick=()=>onclick(d);return d}
 window.openUserInventory=function(s){viewed=s;showPage('inventory')};
 function renderSingleInventory(sid){$('trade-split-view').style.display='none';$('single-inv-view').style.display='block';$('send-trade-submit').style.display='none';
   $('inv-title').textContent='Inventory of '+uname(sid);renderInventoryPage()}
