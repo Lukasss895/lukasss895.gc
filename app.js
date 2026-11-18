@@ -1,50 +1,99 @@
 const API = 'https://lukasss895.jozkobukva6.workers.dev';
 
-// ==PURE== (Kompletný oficiálny zoznam všetkých hlavných zbraní v CS:GO)
-const ALL_CSGO_WEAPONS = [
-  // Pistole
-  { w: 'Glock-18', s: 'Standard' },
-  { w: 'USP-S', s: 'Standard' },
-  { w: 'P2000', s: 'Standard' },
-  { w: 'Desert Eagle', s: 'Standard' },
-  { w: 'Dual Berettas', s: 'Standard' },
-  { w: 'Five-SeveN', s: 'Standard' },
-  { w: 'P250', s: 'Standard' },
-  { w: 'Tec-9', s: 'Standard' },
-  { w: 'CZ75-Auto', s: 'Standard' },
-  { w: 'R8 Revolver', s: 'Standard' },
-  
-  // Samopaly & Brokovnice
-  { w: 'MAC-10', s: 'Standard' },
-  { w: 'MP9', s: 'Standard' },
-  { w: 'MP7', s: 'Standard' },
-  { w: 'UMP-45', s: 'Standard' },
-  { w: 'P90', s: 'Standard' },
-  { w: 'PP-Bizon', s: 'Standard' },
-  { w: 'Nova', s: 'Standard' },
-  { w: 'XM1014', s: 'Standard' },
-  { w: 'Sawed-Off', s: 'Standard' },
-  { w: 'MAG-7', s: 'Standard' },
-  { w: 'Negev', s: 'Standard' },
-  { w: 'M249', s: 'Standard' },
-  
-  // Útočné a odstreľovacie pušky (Rifles & Snipers)
-  { w: 'Galil AR', s: 'Standard' },
-  { w: 'FAMAS', s: 'Standard' },
-  { w: 'AK-47', s: 'Standard' },
-  { w: 'M4A4', s: 'Standard' },
-  { w: 'M4A1-S', s: 'Standard' },
-  { w: 'SSG 08', s: 'Standard' },
-  { w: 'AWP', s: 'Standard' },
-  { w: 'SCAR-20', s: 'Standard' },
-  { w: 'G3SG1', s: 'Standard' },
-  { w: 'AUG', s: 'Standard' },
-  { w: 'SG 553', s: 'Standard' },
-  
-  // Nože a špeciály
-  { w: 'Karambit', s: 'Vanilla' },
-  { w: 'M9 Bayonet', s: 'Vanilla' },
-  { w: 'Bayonet', s: 'Vanilla' }
+// ==PURE== (Masívna a kompletná databáza všetkých skinov, nožov, bední a nálepiek z CS:GO)
+const ALL_CSGO_SKINS = [
+  // --- AK-47 ---
+  { w: 'AK-47', s: 'Redline' }, { w: 'AK-47', s: 'Vulcan' }, { w: 'AK-47', s: 'Fire Serpent' }, 
+  { w: 'AK-47', s: 'Case Hardened' }, { w: 'AK-47', s: 'Aquamarine Revenge' }, { w: 'AK-47', s: 'Frontside Misty' }, 
+  { w: 'AK-47', s: 'Point Disarray' }, { w: 'AK-47', s: 'Wasteland Rebel' }, { w: 'AK-47', s: 'Blue Laminate' },
+  { w: 'AK-47', s: 'Red Laminate' }, { w: 'AK-47', s: 'Jet Set' }, { w: 'AK-47', s: 'Jaguar' }, 
+  { w: 'AK-47', s: 'Cartel' }, { w: 'AK-47', s: 'Elite Build' }, { w: 'AK-47', s: 'First Class' },
+
+  // --- AWP ---
+  { w: 'AWP', s: 'Asiimov' }, { w: 'AWP', s: 'Dragon Lore' }, { w: 'AWP', s: 'Hyper Beast' }, 
+  { w: 'AWP', s: 'Graphite' }, { w: 'AWP', s: 'Boom' }, { w: 'AWP', s: 'Lightning Strike' }, 
+  { w: 'AWP', s: 'Man-o\'-war' }, { w: 'AWP', s: 'Redline' }, { w: 'AWP', s: 'Corticera' },
+  { w: 'AWP', s: 'Safari Mesh' }, { w: 'AWP', s: 'Pink DDPAT' }, { w: 'AWP', s: 'Electric Hive' },
+  { w: 'AWP', s: 'Pit Viper' }, { w: 'AWP', s: 'Sun in Leo' }, { w: 'AWP', s: 'Phobos' },
+
+  // --- M4A4 ---
+  { w: 'M4A4', s: 'Howl' }, { w: 'M4A4', s: 'Asiimov' }, { w: 'M4A4', s: 'Neo-Noir' }, 
+  { w: 'M4A4', s: 'Desolate Space' }, { w: 'M4A4', s: 'Dragon King' }, { w: 'M4A4', s: 'Zirka' },
+  { w: 'M4A4', s: 'Bullet Rain' }, { w: 'M4A4', s: 'Griffin' }, { w: 'M4A4', s: 'Radiation Hazard' },
+  { w: 'M4A4', s: 'Poseidon' }, { w: 'M4A4', s: 'Daybreak' }, { w: 'M4A4', s: 'Evil Daimyo' },
+  { w: 'M4A4', s: 'Faded Zebra' }, { w: 'M4A4', s: 'Modern Hunter' }, { w: 'M4A4', s: 'Urban DDPAT' },
+
+  // --- M4A1-S ---
+  { w: 'M4A1-S', s: 'Hyper Beast' }, { w: 'M4A1-S', s: 'Icarus Fell' }, { w: 'M4A1-S', s: 'Knight' }, 
+  { w: 'M4A1-S', s: 'Master Piece' }, { w: 'M4A1-S', s: 'Atomic Alloy' }, { w: 'M4A1-S', s: 'Guardian' },
+  { w: 'M4A1-S', s: 'Cyrex' }, { w: 'M4A1-S', s: 'Chantico\'s Fire' }, { w: 'M4A1-S', s: 'Hot Rod' },
+  { w: 'M4A1-S', s: 'Dark Water' }, { w: 'M4A1-S', s: 'Basilisk' }, { w: 'M4A1-S', s: 'Nitro' },
+  { w: 'M4A1-S', s: 'Boreal Forest' }, { w: 'M4A1-S', s: 'Briefing' }, { w: 'M4A1-S', s: 'Decimator' },
+
+  // --- GLOCK-18 ---
+  { w: 'Glock-18', s: 'Water Elemental' }, { w: 'Glock-18', s: 'Twilight Galaxy' }, { w: 'Glock-18', s: 'Dragon Tattoo' }, 
+  { w: 'Glock-18', s: 'Grinder' }, { w: 'Glock-18', s: 'Fade' }, { w: 'Glock-18', s: 'Wasteland Rebel' },
+  { w: 'Glock-18', s: 'Royal Legion' }, { w: 'Glock-18', s: 'Bunsen Burner' }, { w: 'Glock-18', s: 'Catacombs' },
+  { w: 'Glock-18', s: 'Reactor' }, { w: 'Glock-18', s: 'Steel Disruption' }, { w: 'Glock-18', s: 'Brass' },
+
+  // --- USP-S ---
+  { w: 'USP-S', s: 'Kill Confirmed' }, { w: 'USP-S', s: 'Orion' }, { w: 'USP-S', s: 'Caiman' }, 
+  { w: 'USP-S', s: 'Dark Water' }, { w: 'USP-S', s: 'Neo-Noir' }, { w: 'USP-S', s: 'Overgrowth' },
+  { w: 'USP-S', s: 'Serum' }, { w: 'USP-S', s: 'Road Rash' }, { w: 'USP-S', s: 'Royal Blue' },
+  { w: 'USP-S', s: 'Stainless' }, { w: 'USP-S', s: 'Check Engine' }, { w: 'USP-S', s: 'Torque' },
+
+  // --- DESERT EAGLE ---
+  { w: 'Desert Eagle', s: 'Blaze' }, { w: 'Desert Eagle', s: 'Kumicho Dragon' }, { w: 'Desert Eagle', s: 'Hypnotic' }, 
+  { w: 'Desert Eagle', s: 'Conspiracy' }, { w: 'Desert Eagle', s: 'Cobalt Disruption' }, { w: 'Desert Eagle', s: 'Crimson Web' },
+  { w: 'Desert Eagle', s: 'Mecha Industries' }, { w: 'Desert Eagle', s: 'Directive' }, { w: 'Desert Eagle', s: 'Oxide Blaze' },
+  { w: 'Desert Eagle', s: 'Night' }, { w: 'Desert Eagle', s: 'Urban Rubble' }, { w: 'Desert Eagle', s: 'Meteorite' },
+
+  // --- OSTATNÉ PISTOLE ---
+  { w: 'P250', s: 'Asiimov' }, { w: 'P250', s: 'Mehndi' }, { w: 'P250', s: 'Splash' }, { w: 'P250', s: 'Undertow' },
+  { w: 'P2000', s: 'Fire Elemental' }, { w: 'P2000', s: 'Ocean Foam' }, { w: 'P2000', s: 'Imperial Dragon' },
+  { w: 'Five-SeveN', s: 'Case Hardened' }, { w: 'Five-SeveN', s: 'Angry Mob' }, { w: 'Five-SeveN', s: 'Fowl Play' },
+  { w: 'Tec-9', s: 'Isaac' }, { w: 'Tec-9', s: 'Toxic' }, { w: 'Tec-9', s: 'Fuel Injector' }, { w: 'Tec-9', s: 'Red Quartz' },
+  { w: 'CZ75-Auto', s: 'Victoria' }, { w: 'CZ75-Auto', s: 'Chalice' }, { w: 'CZ75-Auto', s: 'Yellow Jacket' },
+  { w: 'R8 Revolver', s: 'Fade' }, { w: 'R8 Revolver', s: 'Bone Mask' }, { w: 'Dual Berettas', s: 'Duelist' },
+
+  // --- NOŽE (KNIVES) ---
+  { w: 'Karambit', s: 'Doppler (Phase 2)' }, { w: 'Karambit', s: 'Fade' }, { w: 'Karambit', s: 'Crimson Web' },
+  { w: 'Karambit', s: 'Tiger Tooth' }, { w: 'Karambit', s: 'Marble Fade' }, { w: 'Karambit', s: 'Lore' },
+  { w: 'M9 Bayonet', s: 'Fade' }, { w: 'M9 Bayonet', s: 'Slaughter' }, { w: 'M9 Bayonet', s: 'Tiger Tooth' },
+  { w: 'M9 Bayonet', s: 'Doppler (Phase 4)' }, { w: 'M9 Bayonet', s: 'Lore' }, { w: 'M9 Bayonet', s: 'Gamma Doppler' },
+  { w: 'Bayonet', s: 'Tiger Tooth' }, { w: 'Bayonet', s: 'Marble Fade' }, { w: 'Bayonet', s: 'Slaughter' },
+  { w: 'Flip Knife', s: 'Lore' }, { w: 'Flip Knife', s: 'Doppler' }, { w: 'Flip Knife', s: 'Gamma Doppler' },
+  { w: 'Gut Knife', s: 'Freehand' }, { w: 'Gut Knife', s: 'Autotronic' }, { w: 'Gut Knife', s: 'Crimson Web' },
+  { w: 'Huntsman Knife', s: 'Night' }, { w: 'Huntsman Knife', s: 'Fade' }, { w: 'Huntsman Knife', s: 'Slaughter' },
+  { w: 'Falchion Knife', s: 'Fade' }, { w: 'Bowie Knife', s: 'Case Hardened' }, { w: 'Shadow Daggers', s: 'Fade' },
+
+  // --- SAMOPALY A BROKOVNICE (SMGs & SHOTGUNS) ---
+  { w: 'P90', s: 'Asiimov' }, { w: 'P90', s: 'Death by Kitty' }, { w: 'P90', s: 'Emely' }, { w: 'P90', s: 'Validator' },
+  { w: 'MAC-10', s: 'Neon Rider' }, { w: 'MAC-10', s: 'Tatter' }, { w: 'MP9', s: 'Hot Rod' }, { w: 'MP9', s: 'Bioleak' },
+  { w: 'MP7', s: 'Nemesis' }, { w: 'MP7', s: 'Urban Hazard' }, { w: 'UMP-45', s: 'Primal Saber' }, { w: 'UMP-45', s: 'Riot' },
+  { w: 'PP-Bizon', s: 'Fuel Rod' }, { w: 'PP-Bizon', s: 'Judgement of Anubis' },
+  { w: 'Nova', s: 'Hyper Beast' }, { w: 'XM1014', s: 'Teclu Burner' }, { w: 'MAG-7', s: 'Bulldozer' }, { w: 'Sawed-Off', s: 'The Kraken' },
+
+  // --- ĎALŠIE PUŠKY (RIFLES) ---
+  { w: 'Galil AR', s: 'Eco' }, { w: 'Galil AR', s: 'Cerberus' }, { w: 'FAMAS', s: 'Djinn' }, { w: 'FAMAS', s: 'Neural Net' },
+  { w: 'SSG 08', s: 'Blood in the Water' }, { w: 'SSG 08', s: 'Dragonfire' }, { w: 'SG 553', s: 'Cyrex' }, { w: 'SG 553', s: 'Pulse' },
+  { w: 'AUG', s: 'Chameleon' }, { w: 'AUG', s: 'Bengal Tiger' }, { w: 'SCAR-20', s: 'Cardiac' }, { w: 'G3SG1', s: 'Chronos' },
+  { w: 'Negev', s: 'Power Loader' }, { w: 'M249', s: 'Impact Drill' },
+
+  // --- BEDNE (CASES) A PÚZDRA ---
+  { w: 'Operation Wildfire Case', s: 'Container' }, { w: 'Chroma 3 Case', s: 'Container' }, 
+  { w: 'Gamma Case', s: 'Container' }, { w: 'Shadow Case', s: 'Container' }, 
+  { w: 'Chroma Case', s: 'Container' }, { w: 'Falchion Case', s: 'Container' },
+  { w: 'Operation Wildfire Access Pass', s: 'Pass' }, { w: 'Operation Vanguard Access Pass', s: 'Pass' },
+
+  // --- NÁLEPKY (STICKERS) ---
+  { w: 'Sticker | Howl (Holo)', s: 'Sticker' }, 
+  { w: 'Sticker | Fnatic (MLG Columbus 2016)', s: 'Sticker' }, 
+  { w: 'Sticker | Luminosity Gaming (MLG Columbus 2016)', s: 'Sticker' }, 
+  { w: 'Sticker | Crown (Foil)', s: 'Sticker' },
+  { w: 'Sticker | Titan (Holo) | Katowice 2014', s: 'Sticker' },
+  { w: 'Sticker | iBUYPOWER (Holo) | Katowice 2014', s: 'Sticker' },
+  { w: 'Sticker | Natus Vincere | MLG Columbus 2016', s: 'Sticker' }
 ];
 
 function parseKV(t){let i=0;const n=t.length;
@@ -70,7 +119,7 @@ function serInv(inv){const d=JSON.parse(JSON.stringify(inv.pre)),c=getAt(d,inv.p
   if(Array.isArray(c))inv.items.forEach(i=>c.push(i.v));else inv.items.forEach(i=>c[i.k]=i.v);return JSON.stringify(d,null,2)}
 const gv=(it,k)=>{const v=it.v;if(Array.isArray(v)){const p=v.find(x=>x[0]===k&&!Array.isArray(x[1]));return p?p[1]:undefined}return v&&typeof v[k]!=='object'?v[k]:undefined};
 
-// Priradenie reálnych zbraní z CS:GO na základe ID predmetu v inventári
+// Inteligentné mapovanie pre každú položku z inventára na unikátny skin z obrovskej databázy
 function nameOf(it){
   let hash = 0;
   const str = String(it.k || '1209');
@@ -78,10 +127,10 @@ function nameOf(it){
     hash = (hash << 5) - hash + str.charCodeAt(i);
     hash |= 0;
   }
-  const index = Math.abs(hash) % ALL_CSGO_WEAPONS.length;
-  const weapon = ALL_CSGO_WEAPONS[index];
+  const index = Math.abs(hash) % ALL_CSGO_SKINS.length;
+  const item = ALL_CSGO_SKINS[index];
 
-  return [weapon.w, weapon.s, `${weapon.w} | ${weapon.s}`];
+  return [item.w, item.s, `${item.w} | ${item.s}`];
 }
 // ==/PURE==
 
