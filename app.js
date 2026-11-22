@@ -52,7 +52,7 @@ async function loadCatalog(){try{const [sk,st]=await Promise.all([getJSON('skins
 function resolveItem(it){const d=getDef(it)||0,p=getPaint(it)||0,cn=getCustom(it),own=getRarity(it)||0;
   if(d===STICKER_DEF){const id=getSticker(it),s=id!==undefined&&CAT.stickers[id],nm=s?s.n:'Sticker'+(id!==undefined?' #'+id:'');
     return{w:'Sticker',s:nm.replace(/^Sticker \| /,''),full:nm,r:s?s.r:((own>=1&&own<=6)?own:3),img:s?s.i:null}}
-  const wn=WEAPONS[d]||(d?'Item '+d:'Predmet '+it.k),e=CAT.skins[d+'|'+p]||CAT.skins[wn+'|'+p];
+  const wn=WEAPONS[d]||(d?'Item '+d:'Item '+it.k),e=CAT.skins[d+'|'+p]||CAT.skins[wn+'|'+p];
   const skin=e?e.n.split(' | ').slice(1).join(' | ').replace(/^★ /,''):(p?(CAT.byPaint[p]||'Paint #'+p):'Vanilla'),label=cn?`"${cn}"`:(skin||'Vanilla');
   return{w:wn,s:label,full:wn+' | '+label,r:e?e.r:((own>=1&&own<=6)?own:(d>=500&&d<=516?6:3)),img:e?e.i:null}}
 const okItem=it=>{const d=getDef(it);return !d||!!WEAPONS[d]||d===STICKER_DEF};
@@ -63,12 +63,12 @@ let TOKEN=localStorage.getItem('gc_token')||'',db={users:{},inventories:{},trade
 if(location.hash.startsWith('#token=')){TOKEN=location.hash.slice(7);localStorage.setItem('gc_token',TOKEN);history.replaceState(null,'',location.pathname)}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function api(p,body){try{const r=await fetch(API+p,{method:body?'POST':'GET',headers:{'content-type':'application/json',...(TOKEN?{authorization:'Bearer '+TOKEN}:{})},body:body?JSON.stringify(body):undefined});return await r.json()}catch(e){return{error:'Server nedostupný'}}}
+async function api(p,body){try{const r=await fetch(API+p,{method:body?'POST':'GET',headers:{'content-type':'application/json',...(TOKEN?{authorization:'Bearer '+TOKEN}:{})},body:body?JSON.stringify(body):undefined});return await r.json()}catch(e){return{error:'Server unavailable'}}}
 async function refresh(){const d=await api('/api/data');if(d.error)return false;db=d;me=d.me&&d.users[d.me]?d.me:null;if(!me&&TOKEN){TOKEN='';localStorage.removeItem('gc_token')}return true}
 const uname=s=>db.users[s]?db.users[s].name:s;
 const items=s=>((db.inventories[s]&&db.inventories[s].items)||[]).filter(okItem);
 
-document.addEventListener('DOMContentLoaded',async()=>{$('steam-login-btn').href=API+'/login';const ok=await Promise.all([refresh(),Promise.race([loadCatalog(),new Promise(r=>setTimeout(r,15000))])]).then(x=>x[0]);if(!ok)$('auth-error').textContent='Server nedostupný, skús neskôr.';if(me){viewed=me;showMainApp()}else showAuthPage()});
+document.addEventListener('DOMContentLoaded',async()=>{$('steam-login-btn').href=API+'/login';const ok=await Promise.all([refresh(),Promise.race([loadCatalog(),new Promise(r=>setTimeout(r,15000))])]).then(x=>x[0]);if(!ok)$('auth-error').textContent='Server unavailable, try again later.';if(me){viewed=me;showMainApp()}else showAuthPage()});
 
 const PAGES=['auth','profile','inventory','trades','players'];
 window.showPage=function(name){
@@ -86,9 +86,9 @@ function renderProfile(sid){const u=db.users[sid];if(!u)return;viewed=sid;
   $('my-sync-box').style.display=sid===me?'block':'none';
   $('prof-trade-btn-area').innerHTML=sid===me?'':`<button onclick="startTradeWith('${esc(sid)}')" class="btn-steam btn-green" style="margin-top:15px;width:100%">Trade with ${esc(u.name)}</button>`}
 
-window.uploadInventoryFile=function(){const f=$('inv-file-input').files[0];if(!f)return alert('Najskôr vyber súbor inventory.txt!');
-  const r=new FileReader();r.onload=async e=>{const inv=buildInv(e.target.result);if(!inv)return alert('V súbore som nenašiel žiadne predmety. Pošli ukážku súboru, upravím čítanie.');
-    const res=await api('/api/inventory',{inv});if(res.error)return alert('Chyba: '+res.error);await refresh();alert('Nahraných predmetov: '+res.count);renderProfile(me)};r.readAsText(f)};
+window.uploadInventoryFile=function(){const f=$('inv-file-input').files[0];if(!f)return alert('Please choose your inventory.txt file first!');
+  const r=new FileReader();r.onload=async e=>{const inv=buildInv(e.target.result);if(!inv)return alert('No items found in this file.');
+    const res=await api('/api/inventory',{inv});if(res.error)return alert('Error: '+res.error);await refresh();alert('Items uploaded: '+res.count);renderProfile(me)};r.readAsText(f)};
 window.downloadUpdatedInventory=function(){const inv=db.inventories[me];if(!inv)return alert('Najprv nahraj inventory.txt.');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([serInv(inv)],{type:'text/plain'}));a.download='inventory.txt';document.body.appendChild(a);a.click();a.remove()};
 
@@ -99,26 +99,26 @@ window.openUserInventory=function(s){viewed=s;showPage('inventory')};
 function renderSingleInventory(sid){$('trade-split-view').style.display='none';$('single-inv-view').style.display='block';$('send-trade-submit').style.display='none';
   $('inv-title').textContent='Inventory of '+uname(sid);renderInventoryPage()}
 function catStatus(){let e=$('cat-status');if(!e){e=document.createElement('div');e.id='cat-status';e.style.cssText='font-size:11px;color:#8f98a0;margin:4px 0 10px';$('inv-title').after(e)}
-  e.textContent=APP_VERSION+' | '+(CAT.ok?`Katalóg: ${CAT.nS} skinov a ${CAT.nT} nálepiek načítaných. Pozri sa myšou na predmet, ukáže sa jeho surový záznam.`:'Katalóg skinov sa NEPODARILO načítať (internet alebo blokátor reklám), preto sa ukazuje len meno zbrane.')}
+  e.textContent=APP_VERSION+' | '+(CAT.ok?`Catalog: ${CAT.nS} skins and ${CAT.nT} stickers loaded. Hover over an item to see its raw record.`:'Skin catalog could not be loaded (internet or ad blocker), so only weapon names are shown.')}
 window.renderInventoryPage=function(){catStatus();const q=$('inv-search').value.toLowerCase(),g=$('single-inv-grid');g.innerHTML='';
   const l=items(viewed||me).filter(i=>nameOf(i).join(' ').toLowerCase().includes(q));
-  if(!l.length)g.innerHTML='<p style="color:#8f98a0;padding:20px">Žiadne predmety.</p>';l.forEach(i=>g.appendChild(tile(i)))};
+  if(!l.length)g.innerHTML='<p style="color:#8f98a0;padding:20px">No items.</p>';l.forEach(i=>g.appendChild(tile(i)))};
 
-window.startTradeWith=function(sid){if(!me)return;if(sid===me)return alert('Nemôžeš obchodovať sám so sebou!');target=sid;selMine=[];selTheirs=[];showPage('inventory');
+window.startTradeWith=function(sid){if(!me)return;if(sid===me)return alert('You cannot trade with yourself!');target=sid;selMine=[];selTheirs=[];showPage('inventory');
   $('trade-split-view').style.display='block';$('single-inv-view').style.display='none';$('send-trade-submit').style.display='block';$('inv-title').textContent='Trade Offer: You vs '+uname(sid);
   const fill=(id,s,sel)=>{const g=$(id);g.innerHTML='';items(s).forEach(i=>g.appendChild(tile(i,d=>{const x=sel.indexOf(i.k);if(x<0)sel.push(i.k);else sel.splice(x,1);d.classList.toggle('selected')})))};
   fill('my-trade-grid',me,selMine);fill('their-trade-grid',sid,selTheirs)};
-window.submitTradeOffer=async function(){if(!selMine.length&&!selTheirs.length)return alert('Vyber aspoň jednu položku!');
-  const r=await api('/api/trade',{to:target,give:selMine,get:selTheirs});if(r.error)return alert(r.error);await refresh();alert('Ponuka odoslaná!');showPage('trades')};
-function renderTradesPage(){const L=$('trades-list');L.innerHTML='';const ts=db.trades.slice().reverse();if(!ts.length){L.innerHTML='<p style="color:#8f98a0">Žiadne trade ponuky.</p>';return}
-  const nm=l=>l.map(i=>nameOf(i).slice(0,2).join(' ')).join(', ')||'nič';
+window.submitTradeOffer=async function(){if(!selMine.length&&!selTheirs.length)return alert('Select at least one item!');
+  const r=await api('/api/trade',{to:target,give:selMine,get:selTheirs});if(r.error)return alert(r.error);await refresh();alert('Trade offer sent!');showPage('trades')};
+function renderTradesPage(){const L=$('trades-list');L.innerHTML='';const ts=db.trades.slice().reverse();if(!ts.length){L.innerHTML='<p style="color:#8f98a0">No trade offers.</p>';return}
+  const nm=l=>l.map(i=>nameOf(i).slice(0,2).join(' ')).join(', ')||'nothing';
   ts.forEach(t=>{const b=document.createElement('div');b.className='showcase-box';const col=t.status==='accepted'?'#a4d007':t.status==='pending'?'#66c0f4':'#eb4b4b';b.style.cssText='margin-bottom:15px;padding:15px;border-left:4px solid '+col;
     b.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:10px"><b style="color:#fff">${esc(uname(t.from))} → ${esc(uname(t.to))}</b><span style="color:${col}">${esc(t.status)}</span></div>
-      <div style="color:#8f98a0;margin-bottom:12px"><b>${esc(uname(t.from))} dáva:</b> ${esc(nm(t.give))}<br><b>${esc(uname(t.to))} dáva:</b> ${esc(nm(t.get))}</div>`;
+      <div style="color:#8f98a0;margin-bottom:12px"><b>${esc(uname(t.from))} gives:</b> ${esc(nm(t.give))}<br><b>${esc(uname(t.to))} gives:</b> ${esc(nm(t.get))}</div>`;
     if(t.status==='pending'){const r=document.createElement('div');r.style.cssText='display:flex;gap:10px';
       const mk=(txt,act,cls)=>{const x=document.createElement('button');x.className='btn-steam '+cls;x.textContent=txt;x.onclick=()=>respondTrade(t.id,act);r.appendChild(x)};
       if(t.to===me){mk('Accept Trade','accept','btn-green');mk('Decline','decline','')}else mk('Cancel','cancel','');b.appendChild(r)}L.appendChild(b)})}
-window.respondTrade=async function(id,act){const r=await api('/api/trade/act',{id,act});if(r.error)alert(r.error);else if(act==='accept')alert('Trade prijatý! Teraz si na profile stiahni Download Updated inventory.txt a vymeň ním súbor v csgo_gc.');
+window.respondTrade=async function(id,act){const r=await api('/api/trade/act',{id,act});if(r.error)alert(r.error);else if(act==='accept')alert('Trade accepted! Now go to your profile, click Download Updated inventory.txt and replace the file in your csgo_gc folder.');
   await refresh();showMainApp();showPage('trades')};
 function renderPlayersList(){const L=$('players-list');L.innerHTML='';Object.values(db.users).forEach(u=>{const c=document.createElement('div');c.className='showcase-box';c.style.cssText='padding:15px;text-align:center';
   c.innerHTML=`<div style="font-weight:bold;color:#fff;font-size:15px;margin-bottom:5px">${esc(u.name)}</div><div style="color:#8f98a0;font-size:12px;margin-bottom:12px">Items: ${items(u.sid).length}</div><button onclick="viewPlayerProfile('${esc(u.sid)}')" class="btn-steam" style="width:100%;font-size:12px">View Profile</button>`;L.appendChild(c)})}
