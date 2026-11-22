@@ -1,72 +1,23 @@
 const API = 'https://lukasss895.jozkobukva6.workers.dev';
 
-// ==PURE== (CS:GO 2016 / Operation Wildfire: IBA nožíky, nálepky a zbrane — žiadne bedne/cases)
-
-// Presne 2 nožíky v tvojom inventári
-const MY_TWO_KNIVES = [
-  { w: 'Karambit', s: 'Doppler (Phase 2)', r: 6 },
-  { w: 'M9 Bayonet', s: 'Fade', r: 6 }
-];
-
-// Kompletná kolekcia nálepiek z éry CS:GO 2016 / Operation Wildfire
-const STICKERS_2016 = [
-  { w: 'Sticker | Howl (Holo)', s: 'Wildfire Era', r: 6 },
-  { w: 'Sticker | Crown (Foil)', s: 'Foil Sticker', r: 5 },
-  { w: 'Sticker | Firestarter (Holo)', s: 'Holo Sticker', r: 4 },
-  { w: 'Sticker | Headhunter (Foil)', s: 'Foil Sticker', r: 4 },
-  { w: 'Sticker | Swag (Foil)', s: 'Foil Sticker', r: 4 },
-  { w: 'Sticker | Sheriff (Foil)', s: 'Foil Sticker', r: 4 },
-  { w: 'Sticker | Flammable (Foil)', s: 'Foil Sticker', r: 4 },
-  { w: 'Sticker | Fnatic (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Luminosity Gaming (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Natus Vincere (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Astralis (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Team Liquid (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Ninjas in Pyjamas (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Counter Logic Gaming (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | FaZe Clan (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Splyce (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Gambit Gaming (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Virtus.Pro (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | G2 Esports (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | mousesports (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Cloud9 (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Team EnVyUs (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | FlipSid3 Tactics (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
-  { w: 'Sticker | Phoenix (Foil)', s: 'Operation Wildfire', r: 4 },
-  { w: 'Sticker | Chabo', s: 'Operation Wildfire', r: 2 },
-  { w: 'Sticker | Trick or Threat', s: '2016 Collection', r: 2 },
-  { w: 'Sticker | Witchcraft', s: '2016 Collection', r: 2 }
-];
-
-// Kompletná zbierka zbraní a skinov z CS:GO 2016 / Operation Wildfire
-const WEAPONS_AND_SKINS_2016 = [
-  // AK-47
-  { w: 'AK-47', s: 'Fire Serpent', r: 6 },
-  { w: 'AK-47', s: 'Vulcan', r: 5 },
+// ==PURE== (CS:GO Leto 2016 / Operation Wildfire: zbrane so skinmi, nožíky a nálepky pre všetkých hráčov)
+const WILDFIRE_2016_CATALOG = [
+  // Zbrane a skiny (Operation Wildfire & Leto 2016)
+  { w: 'AK-47', s: 'Fuel Injector', r: 5 },
   { w: 'AK-47', s: 'Redline', r: 4 },
+  { w: 'AK-47', s: 'Vulcan', r: 5 },
+  { w: 'AK-47', s: 'Fire Serpent', r: 6 },
   { w: 'AK-47', s: 'Aquamarine Revenge', r: 5 },
   { w: 'AK-47', s: 'Point Disarray', r: 4 },
   { w: 'AK-47', s: 'Frontside Misty', r: 4 },
-  { w: 'AK-47', s: 'Wasteland Rebel', r: 5 },
   { w: 'AK-47', s: 'Case Hardened', r: 5 },
-  { w: 'AK-47', s: 'Fuel Injector', r: 5 },
-  { w: 'AK-47', s: 'Jaguar', r: 5 },
-  { w: 'AK-47', s: 'Hydroponic', r: 5 },
-  { w: 'AK-47', s: 'Jet Set', r: 4 },
-  { w: 'AK-47', s: 'First Class', r: 4 },
-  { w: 'AK-47', s: 'Cartel', r: 4 },
-  { w: 'AK-47', s: 'Red Laminate', r: 4 },
+  { w: 'AK-47', s: 'Wasteland Rebel', r: 5 },
   { w: 'AK-47', s: 'Blue Laminate', r: 3 },
-  { w: 'AK-47', s: 'Emerald Pinstripe', r: 3 },
+  { w: 'AK-47', s: 'Red Laminate', r: 4 },
   { w: 'AK-47', s: 'Elite Build', r: 3 },
-  { w: 'AK-47', s: 'Jungle Spray', r: 2 },
-  { w: 'AK-47', s: 'Safari Mesh', r: 1 },
 
-  // AWP
-  { w: 'AWP', s: 'Dragon Lore', r: 6 },
-  { w: 'AWP', s: 'Medusa', r: 6 },
   { w: 'AWP', s: 'Asiimov', r: 5 },
+  { w: 'AWP', s: 'Dragon Lore', r: 6 },
   { w: 'AWP', s: 'Hyper Beast', r: 5 },
   { w: 'AWP', s: 'Lightning Strike', r: 5 },
   { w: 'AWP', s: 'Graphite', r: 4 },
@@ -74,179 +25,129 @@ const WEAPONS_AND_SKINS_2016 = [
   { w: 'AWP', s: 'Man-o\'-war', r: 4 },
   { w: 'AWP', s: 'Redline', r: 4 },
   { w: 'AWP', s: 'Electric Hive', r: 4 },
-  { w: 'AWP', s: 'Pink DDPAT', r: 4 },
-  { w: 'AWP', s: 'Corticera', r: 4 },
-  { w: 'AWP', s: 'Sun in Leo', r: 3 },
   { w: 'AWP', s: 'Phobos', r: 3 },
+  { w: 'AWP', s: 'Sun in Leo', r: 3 },
   { w: 'AWP', s: 'Worm God', r: 3 },
-  { w: 'AWP', s: 'Pit Viper', r: 3 },
-  { w: 'AWP', s: 'Safari Mesh', r: 1 },
 
-  // M4A4
+  { w: 'M4A4', s: 'Desolate Space', r: 4 },
   { w: 'M4A4', s: 'Howl', r: 6 },
-  { w: 'M4A4', s: 'Poseidon', r: 5 },
   { w: 'M4A4', s: 'Asiimov', r: 5 },
   { w: 'M4A4', s: 'Royal Paladin', r: 5 },
   { w: 'M4A4', s: 'Buzz Kill', r: 5 },
-  { w: 'M4A4', s: 'Daybreak', r: 4 },
+  { w: 'M4A4', s: 'Poseidon', r: 5 },
   { w: 'M4A4', s: 'Bullet Rain', r: 4 },
-  { w: 'M4A4', s: 'Desert-Strike', r: 4 },
   { w: 'M4A4', s: 'Dragon King', r: 4 },
-  { w: 'M4A4', s: 'X-Ray', r: 4 },
-  { w: 'M4A4', s: 'Zirka', r: 4 },
-  { w: 'M4A4', s: 'Griffin', r: 3 },
   { w: 'M4A4', s: 'Evil Daimyo', r: 3 },
-  { w: 'M4A4', s: 'Radiation Hazard', r: 4 },
-  { w: 'M4A4', s: 'Modern Hunter', r: 3 },
-  { w: 'M4A4', s: 'Faded Zebra', r: 3 },
-  { w: 'M4A4', s: 'Urban DDPAT', r: 1 },
+  { w: 'M4A4', s: 'Zirka', r: 4 },
 
-  // M4A1-S
-  { w: 'M4A1-S', s: 'Knight', r: 5 },
-  { w: 'M4A1-S', s: 'Master Piece', r: 5 },
-  { w: 'M4A1-S', s: 'Hot Rod', r: 5 },
-  { w: 'M4A1-S', s: 'Icarus Fell', r: 4 },
-  { w: 'M4A1-S', s: 'Hyper Beast', r: 5 },
-  { w: 'M4A1-S', s: 'Golden Coil', r: 5 },
-  { w: 'M4A1-S', s: 'Chantico\'s Fire', r: 5 },
   { w: 'M4A1-S', s: 'Mecha Industries', r: 5 },
+  { w: 'M4A1-S', s: 'Chantico\'s Fire', r: 5 },
+  { w: 'M4A1-S', s: 'Golden Coil', r: 5 },
+  { w: 'M4A1-S', s: 'Hyper Beast', r: 5 },
+  { w: 'M4A1-S', s: 'Icarus Fell', r: 4 },
+  { w: 'M4A1-S', s: 'Knight', r: 5 },
+  { w: 'M4A1-S', s: 'Hot Rod', r: 5 },
   { w: 'M4A1-S', s: 'Cyrex', r: 4 },
   { w: 'M4A1-S', s: 'Atomic Alloy', r: 4 },
   { w: 'M4A1-S', s: 'Guardian', r: 4 },
-  { w: 'M4A1-S', s: 'Dark Water', r: 4 },
-  { w: 'M4A1-S', s: 'Basilisk', r: 3 },
-  { w: 'M4A1-S', s: 'Nitro', r: 3 },
-  { w: 'M4A1-S', s: 'Bright Water', r: 3 },
-  { w: 'M4A1-S', s: 'Boreal Forest', r: 1 },
 
-  // Desert Eagle
-  { w: 'Desert Eagle', s: 'Blaze', r: 4 },
   { w: 'Desert Eagle', s: 'Kumicho Dragon', r: 4 },
-  { w: 'Desert Eagle', s: 'Golden Koi', r: 4 },
+  { w: 'Desert Eagle', s: 'Blaze', r: 4 },
   { w: 'Desert Eagle', s: 'Cobalt Disruption', r: 4 },
   { w: 'Desert Eagle', s: 'Hypnotic', r: 4 },
-  { w: 'Desert Eagle', s: 'Conspiracy', r: 4 },
   { w: 'Desert Eagle', s: 'Crimson Web', r: 3 },
   { w: 'Desert Eagle', s: 'Naga', r: 3 },
-  { w: 'Desert Eagle', s: 'Meteorite', r: 3 },
-  { w: 'Desert Eagle', s: 'Oxide Blaze', r: 3 },
-  { w: 'Desert Eagle', s: 'Mudder', r: 1 },
 
-  // Glock-18
-  { w: 'Glock-18', s: 'Fade', r: 4 },
+  { w: 'Glock-18', s: 'Wasteland Rebel', r: 4 },
   { w: 'Glock-18', s: 'Twilight Galaxy', r: 4 },
   { w: 'Glock-18', s: 'Water Elemental', r: 4 },
-  { w: 'Glock-18', s: 'Wasteland Rebel', r: 4 },
+  { w: 'Glock-18', s: 'Fade', r: 4 },
   { w: 'Glock-18', s: 'Dragon Tattoo', r: 4 },
-  { w: 'Glock-18', s: 'Royal Legion', r: 3 },
   { w: 'Glock-18', s: 'Grinder', r: 3 },
-  { w: 'Glock-18', s: 'Steel Disruption', r: 3 },
-  { w: 'Glock-18', s: 'Blue Fissure', r: 3 },
   { w: 'Glock-18', s: 'Bunsen Burner', r: 3 },
-  { w: 'Glock-18', s: 'Candy Apple', r: 2 },
-  { w: 'Glock-18', s: 'Catacombs', r: 2 },
 
-  // USP-S
   { w: 'USP-S', s: 'Kill Confirmed', r: 5 },
-  { w: 'USP-S', s: 'Neo-Noir', r: 5 },
   { w: 'USP-S', s: 'Orion', r: 4 },
   { w: 'USP-S', s: 'Caiman', r: 4 },
   { w: 'USP-S', s: 'Overgrowth', r: 4 },
   { w: 'USP-S', s: 'Serum', r: 4 },
   { w: 'USP-S', s: 'Road Rash', r: 4 },
-  { w: 'USP-S', s: 'Dark Water', r: 4 },
-  { w: 'USP-S', s: 'Royal Blue', r: 3 },
-  { w: 'USP-S', s: 'Stainless', r: 3 },
-  { w: 'USP-S', s: 'Cyrex', r: 3 },
   { w: 'USP-S', s: 'Lead Conduit', r: 3 },
 
-  // Ostatné pištole
   { w: 'P250', s: 'Asiimov', r: 4 },
   { w: 'P250', s: 'Mehndi', r: 4 },
-  { w: 'P250', s: 'Undertow', r: 3 },
-  { w: 'P250', s: 'Splash', r: 3 },
-  { w: 'P250', s: 'Franklin', r: 3 },
   { w: 'P250', s: 'Cartel', r: 3 },
-  { w: 'P250', s: 'See Ya Later', r: 4 },
-  { w: 'P2000', s: 'Fire Elemental', r: 4 },
-  { w: 'P2000', s: 'Ocean Foam', r: 4 },
-  { w: 'P2000', s: 'Imperial Dragon', r: 4 },
-  { w: 'P2000', s: 'Corticera', r: 3 },
-  { w: 'P2000', s: 'Amber Fade', r: 3 },
-  { w: 'Five-SeveN', s: 'Hyper Beast', r: 4 },
+  { w: 'P250', s: 'Undertow', r: 3 },
+  { w: 'Five-SeveN', s: 'Retrobution', r: 4 },
   { w: 'Five-SeveN', s: 'Monkey Business', r: 4 },
   { w: 'Five-SeveN', s: 'Case Hardened', r: 3 },
-  { w: 'Five-SeveN', s: 'Fowl Play', r: 3 },
-  { w: 'Five-SeveN', s: 'Triumvirate', r: 3 },
   { w: 'Tec-9', s: 'Fuel Injector', r: 4 },
-  { w: 'Tec-9', s: 'Nuclear Threat', r: 4 },
-  { w: 'Tec-9', s: 'Toxic', r: 3 },
-  { w: 'Tec-9', s: 'Isaac', r: 3 },
-  { w: 'Tec-9', s: 'Sandstorm', r: 2 },
+  { w: 'Tec-9', s: 'Re-Entry', r: 3 },
+  { w: 'CZ75-Auto', s: 'Red Astor', r: 3 },
   { w: 'CZ75-Auto', s: 'Victoria', r: 4 },
-  { w: 'CZ75-Auto', s: 'Chalice', r: 4 },
-  { w: 'CZ75-Auto', s: 'Yellow Jacket', r: 3 },
-  { w: 'CZ75-Auto', s: 'The Fuschia Is Now', r: 3 },
-  { w: 'CZ75-Auto', s: 'Pole Position', r: 3 },
   { w: 'R8 Revolver', s: 'Fade', r: 4 },
-  { w: 'R8 Revolver', s: 'Amber Fade', r: 3 },
-  { w: 'Dual Berettas', s: 'Twin Turbo', r: 3 },
-  { w: 'Dual Berettas', s: 'Panther', r: 3 },
+  { w: 'Dual Berettas', s: 'Cartel', r: 3 },
 
-  // SMG & Brokovnice
   { w: 'P90', s: 'Asiimov', r: 4 },
   { w: 'P90', s: 'Death by Kitty', r: 4 },
-  { w: 'P90', s: 'Emerald Dragon', r: 4 },
-  { w: 'P90', s: 'Cold Blooded', r: 4 },
   { w: 'P90', s: 'Shapewood', r: 3 },
   { w: 'MAC-10', s: 'Neon Rider', r: 4 },
-  { w: 'MAC-10', s: 'Malachite', r: 3 },
-  { w: 'MAC-10', s: 'Tatter', r: 3 },
-  { w: 'MP9', s: 'Hot Rod', r: 4 },
+  { w: 'MAC-10', s: 'Lapis Gator', r: 3 },
   { w: 'MP9', s: 'Ruby Poison Dart', r: 3 },
-  { w: 'MP9', s: 'Hypnotic', r: 3 },
-  { w: 'MP7', s: 'Nemesis', r: 4 },
-  { w: 'MP7', s: 'Ocean Foam', r: 3 },
+  { w: 'MP9', s: 'Hot Rod', r: 4 },
   { w: 'MP7', s: 'Impire', r: 3 },
+  { w: 'MP7', s: 'Nemesis', r: 4 },
   { w: 'UMP-45', s: 'Primal Saber', r: 4 },
   { w: 'UMP-45', s: 'Blaze', r: 3 },
-  { w: 'UMP-45', s: 'Minotaur\'s Labyrinth', r: 3 },
   { w: 'PP-Bizon', s: 'Judgement of Anubis', r: 4 },
-  { w: 'PP-Bizon', s: 'Fuel Rod', r: 3 },
   { w: 'Nova', s: 'Hyper Beast', r: 4 },
-  { w: 'Nova', s: 'Antique', r: 3 },
-  { w: 'Nova', s: 'Bloomstick', r: 3 },
-  { w: 'XM1014', s: 'Teclu Burner', r: 3 },
-  { w: 'XM1014', s: 'Tranquility', r: 3 },
-  { w: 'MAG-7', s: 'Bulldozer', r: 3 },
-  { w: 'MAG-7', s: 'Heat', r: 3 },
-  { w: 'Sawed-Off', s: 'The Kraken', r: 4 },
-  { w: 'Sawed-Off', s: 'Wasteland Princess', r: 3 },
+  { w: 'XM1014', s: 'Black Tie', r: 3 },
+  { w: 'MAG-7', s: 'Praetorian', r: 3 },
+  { w: 'Sawed-Off', s: 'Limelight', r: 3 },
 
-  // Ostatné pušky & guľomety
   { w: 'SSG 08', s: 'Blood in the Water', r: 4 },
   { w: 'SSG 08', s: 'Dragonfire', r: 4 },
   { w: 'SSG 08', s: 'Big Iron', r: 3 },
-  { w: 'SSG 08', s: 'Abyss', r: 3 },
+  { w: 'Galil AR', s: 'Firefight', r: 3 },
   { w: 'Galil AR', s: 'Cerberus', r: 4 },
-  { w: 'Galil AR', s: 'Chatterbox', r: 4 },
-  { w: 'Galil AR', s: 'Eco', r: 3 },
   { w: 'FAMAS', s: 'Roll Cage', r: 4 },
   { w: 'FAMAS', s: 'Djinn', r: 3 },
-  { w: 'FAMAS', s: 'Afterimage', r: 3 },
-  { w: 'SG 553', s: 'Cyrex', r: 3 },
-  { w: 'SG 553', s: 'Pulse', r: 3 },
-  { w: 'AUG', s: 'Akihabara Accept', r: 5 },
-  { w: 'AUG', s: 'Chameleon', r: 4 },
-  { w: 'AUG', s: 'Bengal Tiger', r: 3 },
-  { w: 'SCAR-20', s: 'Cardiac', r: 3 },
-  { w: 'G3SG1', s: 'Chronos', r: 4 },
-  { w: 'Negev', s: 'Power Loader', r: 3 },
-  { w: 'M249', s: 'Impact Drill', r: 3 }
-];
+  { w: 'SG 553', s: 'Triarch', r: 3 },
+  { w: 'AUG', s: 'Syd Mead', r: 4 },
+  { w: 'SCAR-20', s: 'Outbreak', r: 3 },
+  { w: 'G3SG1', s: 'The Executioner', r: 4 },
+  { w: 'Negev', s: 'Loudmouth', r: 3 },
+  { w: 'M249', s: 'Impact Drill', r: 3 },
 
-// Spojený zoznam: zbrane + skiny + nálepky (bez bední)
-const POOL_NO_CASES = [...WEAPONS_AND_SKINS_2016, ...STICKERS_2016];
+  // Nožíky (2016 / Wildfire)
+  { w: 'Bowie Knife', s: 'Fade', r: 6 },
+  { w: 'Bowie Knife', s: 'Slaughter', r: 6 },
+  { w: 'Bowie Knife', s: 'Night', r: 6 },
+  { w: 'Karambit', s: 'Doppler (Phase 2)', r: 6 },
+  { w: 'Karambit', s: 'Fade', r: 6 },
+  { w: 'Karambit', s: 'Tiger Tooth', r: 6 },
+  { w: 'M9 Bayonet', s: 'Fade', r: 6 },
+  { w: 'M9 Bayonet', s: 'Marble Fade', r: 6 },
+  { w: 'Bayonet', s: 'Doppler (Phase 4)', r: 6 },
+  { w: 'Flip Knife', s: 'Lore', r: 6 },
+  { w: 'Gut Knife', s: 'Gamma Doppler', r: 6 },
+  { w: 'Huntsman Knife', s: 'Crimson Web', r: 6 },
+  { w: 'Falchion Knife', s: 'Case Hardened', r: 6 },
+
+  // Nálepky (Operation Wildfire & MLG Columbus 2016)
+  { w: 'Sticker | Wildfire (Foil)', s: 'Operation Wildfire', r: 4 },
+  { w: 'Sticker | Phoenix (Foil)', s: 'Operation Wildfire', r: 4 },
+  { w: 'Sticker | Chabo', s: 'Operation Wildfire', r: 2 },
+  { w: 'Sticker | Crown (Foil)', s: 'Foil Sticker', r: 5 },
+  { w: 'Sticker | Flammable (Foil)', s: 'Foil Sticker', r: 4 },
+  { w: 'Sticker | Howl (Holo)', s: 'Wildfire Era', r: 6 },
+  { w: 'Sticker | Fnatic (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
+  { w: 'Sticker | Luminosity Gaming (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
+  { w: 'Sticker | Natus Vincere (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
+  { w: 'Sticker | Astralis (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
+  { w: 'Sticker | Team Liquid (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 },
+  { w: 'Sticker | FaZe Clan (Holo) | MLG Columbus 2016', s: 'MLG Columbus 2016', r: 4 }
+];
 
 function parseKV(t){let i=0;const n=t.length;
   const ws=()=>{while(i<n){if(/\s/.test(t[i]))i++;else if(t[i]==='/'&&t[i+1]==='/'){while(i<n&&t[i]!=='\n')i++}else break}};
@@ -280,30 +181,10 @@ function hashStr(s){
   return h >>> 0;
 }
 
-// Vypočíta presnú mapu kľúč -> nôž pre aktuálny inventár (vždy presne 2 nožíky)
-function getKnifeMapForCurrentInv(){
-  const map = new Map();
-  const list = (typeof items === 'function' && (viewed || me)) ? items(viewed || me) : [];
-  if (!list.length) return map;
-
-  const sorted = list.slice().sort((a, b) => hashStr(String(a.k)) - hashStr(String(b.k)));
-  for (let i = 0; i < MY_TWO_KNIVES.length && i < sorted.length; i++) {
-    map.set(String(sorted[i].k), MY_TWO_KNIVES[i]);
-  }
-  return map;
-}
-
-// Vráti [Názov zbrane/nálepky/noža, Názov skinu/štítku, Celý názov, Rarita]
 function resolveItem(it){
-  const key = String(it.k || '');
-  const knifeMap = getKnifeMapForCurrentInv();
-  if (knifeMap.has(key)) {
-    const kObj = knifeMap.get(key);
-    return [kObj.w, kObj.s, `${kObj.w} | ${kObj.s}`, kObj.r || 6];
-  }
-
-  const idx = hashStr(key || '1209') % POOL_NO_CASES.length;
-  const entry = POOL_NO_CASES[idx];
+  const key = String(it.k || '1209');
+  const idx = hashStr(key) % WILDFIRE_2016_CATALOG.length;
+  const entry = WILDFIRE_2016_CATALOG[idx];
   const cn = gv(it, 'custom_name');
   const skinLabel = cn ? `"${cn}"` : entry.s;
   const full = entry.w.startsWith('Sticker |') ? entry.w : `${entry.w} | ${skinLabel}`;
