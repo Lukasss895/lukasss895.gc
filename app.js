@@ -11,7 +11,10 @@ function parseKV(t){let i=0;const n=t.length;
   return block()}
 function serKV(p,d=0){const T='\t'.repeat(d);return p.map(([k,v])=>Array.isArray(v)?`${T}"${k}"\n${T}{\n${serKV(v,d+1)}${T}}\n`:`${T}"${k}"\t\t"${v}"\n`).join('')}
 const kids=(node,fmt)=>fmt==='kv'?node.map((p,i)=>[i,p[1]]).filter(x=>Array.isArray(x[1])):(Array.isArray(node)?node.map((v,i)=>[i,v]):Object.entries(node)).filter(x=>x[1]&&typeof x[1]==='object');
-function findContainer(doc,fmt){const b={n:0,path:null};(function w(node,path){const k=kids(node,fmt);if(k.length>b.n){b.n=k.length;b.path=path}k.forEach(([i,v])=>w(v,path.concat([i])))})(doc,[]);return b.path}
+const DEFK=['defindex','definitionindex','itemdefinitionindex','itemdef','defid','definition'];
+const looks=(c,fmt)=>fmt==='kv'?c.some(p=>!Array.isArray(p[1])&&DEFK.includes(String(p[0]).toLowerCase().replace(/[^a-z0-9]/g,''))):Object.keys(c).some(k=>DEFK.includes(k.toLowerCase().replace(/[^a-z0-9]/g,'')));
+function findContainer(doc,fmt){const b={n:0,s:0,path:null};(function w(node,path){const k=kids(node,fmt),sc=k.filter(x=>looks(x[1],fmt)).length;
+    if(sc>b.s||(sc===0&&b.s===0&&k.length>b.n)){b.s=sc;b.n=k.length;b.path=path}k.forEach(([i,v])=>w(v,path.concat([i])))})(doc,[]);return b.path}
 const getAt=(doc,path,fmt)=>path.reduce((n,i)=>fmt==='kv'?n[i][1]:n[i],doc);
 function buildInv(text){const t=text.trim();let fmt='kv',doc=null;
   if(t[0]==='{'||t[0]==='['){try{doc=JSON.parse(t);fmt='json'}catch(e){}}
@@ -24,27 +27,34 @@ function buildInv(text){const t=text.trim();let fmt='kv',doc=null;
 function serInv(inv){const d=JSON.parse(JSON.stringify(inv.pre)),c=getAt(d,inv.path,inv.format);
   if(inv.format==='kv'){inv.items.forEach(i=>c.push([i.k,i.v]));return serKV(d)}
   if(Array.isArray(c))inv.items.forEach(i=>c.push(i.v));else inv.items.forEach(i=>c[i.k]=i.v);return JSON.stringify(d,null,2)}
-const AL={def_index:['def_index','defindex'],paint_index:['paint_index','paintindex'],rarity:['rarity'],custom_name:['custom_name','customname']};
-const gv=(it,k)=>{const v=it.v;for(const a of AL[k]||[k]){if(Array.isArray(v)){const p=v.find(x=>x[0]===a&&!Array.isArray(x[1]));if(p)return p[1]}else if(v&&v[a]!==undefined&&typeof v[a]!=='object')return v[a]}return undefined};
-function deepFind(v,re){if(Array.isArray(v)){for(const p of v){if(!Array.isArray(p)||p.length!==2||typeof p[0]!=='string')continue;
-    if(Array.isArray(p[1])){const r=deepFind(p[1],re);if(r!==undefined)return r}else if(re.test(p[0])&&/^\d+$/.test(String(p[1])))return String(p[1])}}
-  else if(v&&typeof v==='object'){for(const k in v){const x=v[k];if(x&&typeof x==='object'){const r=deepFind(x,re);if(r!==undefined)return r}else if(re.test(k)&&/^\d+$/.test(String(x)))return String(x)}}}
+const nk=s=>String(s).toLowerCase().replace(/[^a-z0-9]/g,'');
+function walk(v,fn,par){if(Array.isArray(v)){for(const p of v){if(Array.isArray(p)&&p.length===2&&typeof p[0]==='string'){fn(p[0],p[1],par);if(p[1]&&typeof p[1]==='object')walk(p[1],fn,p[0])}else if(p&&typeof p==='object')walk(p,fn,par)}}
+  else if(v&&typeof v==='object'){for(const k in v){fn(k,v[k],par);if(v[k]&&typeof v[k]==='object')walk(v[k],fn,k)}}}
+function pickRaw(it,pred){let out;walk(it.v,(k,val,par)=>{if(out!==undefined||(val&&typeof val==='object'))return;if(pred(nk(k),k,par||''))out=val});return out}
+function pickNum(it,pred){const x=pickRaw(it,pred),f=parseFloat(x);return isNaN(f)?undefined:Math.round(f)}
+const isAttr=p=>/attrib/i.test(p);
+const getDef=it=>pickNum(it,(n,k,p)=>['defindex','definitionindex','itemdefinitionindex','itemdef','defid','definition'].includes(n));
+const getPaint=it=>pickNum(it,(n,k,p)=>['paintindex','paintkit','paintkitid','paintid','skinid','skinindex','paint'].includes(n)||(isAttr(p)&&k==='6'));
+const getRarity=it=>pickNum(it,(n)=>n==='rarity');
+const getSticker=it=>pickNum(it,(n,k,p)=>(n.includes('sticker')&&(n.endsWith('id')||n.includes('kit')||n==='sticker'))||(isAttr(p)&&k==='113'));
+const getCustom=it=>{const x=pickRaw(it,n=>n==='customname'||n==='nametag');return x?String(x):''};
 const RAR={'Consumer Grade':1,'Base Grade':1,'Industrial Grade':2,'High Grade':2,'Mil-Spec Grade':3,'Remarkable':3,'Restricted':4,'Exotic':4,'Classified':5,'Extraordinary':5,'Covert':6,'Contraband':6};
-let CAT={skins:{},byPaint:{},stickers:{},ok:false};
-async function loadCatalog(){const B='https://bymykel.github.io/CSGO-API/api/en/';
-  try{const [sk,st]=await Promise.all([fetch(B+'skins.json').then(r=>r.json()),fetch(B+'stickers.json').then(r=>r.json())]);
+let CAT={skins:{},byPaint:{},stickers:{},ok:false,nS:0,nT:0};
+async function getJSON(name){const bases=['https://bymykel.github.io/CSGO-API/api/en/','https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/','https://cdn.jsdelivr.net/gh/ByMykel/CSGO-API@main/public/api/en/'];
+  for(const b of bases){try{const r=await fetch(b+name);if(r.ok)return await r.json()}catch(e){}}return null}
+async function loadCatalog(){try{const [sk,st]=await Promise.all([getJSON('skins.json'),getJSON('stickers.json')]);if(!sk)return;
     const rn=x=>RAR[typeof x==='object'&&x?x.name:x]||3;
-    for(const x of sk){const w=x.weapon||{},pi=x.paint_index==null?0:+x.paint_index,e={n:x.name,i:x.image,r:rn(x.rarity)};
+    for(const x of sk){const w=x.weapon||{},pi=x.paint_index==null?0:parseInt(x.paint_index,10)||0,e={n:x.name,i:x.image,r:rn(x.rarity)};CAT.nS++;
       if(w.weapon_id!=null&&!CAT.skins[w.weapon_id+'|'+pi])CAT.skins[w.weapon_id+'|'+pi]=e;if(w.name&&!CAT.skins[w.name+'|'+pi])CAT.skins[w.name+'|'+pi]=e;
       const pat=(typeof x.pattern==='object'&&x.pattern?x.pattern.name:x.pattern)||(x.name.split(' | ')[1]||'');if(pi&&!CAT.byPaint[pi])CAT.byPaint[pi]=pat}
-    for(const x of st)CAT.stickers[String(x.id).replace('sticker-','')]={n:x.name,i:x.image,r:rn(x.rarity)};CAT.ok=true}catch(e){}}
-function resolveItem(it){const d=+gv(it,'def_index')||0,p=+gv(it,'paint_index')||0,cn=gv(it,'custom_name'),own=+gv(it,'rarity')||0;
-  if(d===STICKER_DEF){const id=deepFind(it.v,/sticker/i),s=id&&CAT.stickers[id],nm=s?s.n:'Sticker'+(id?' #'+id:'');
+    for(const x of (st||[])){CAT.nT++;CAT.stickers[String(x.id).replace('sticker-','')]={n:x.name,i:x.image,r:rn(x.rarity)}}CAT.ok=true}catch(e){}}
+function resolveItem(it){const d=getDef(it)||0,p=getPaint(it)||0,cn=getCustom(it),own=getRarity(it)||0;
+  if(d===STICKER_DEF){const id=getSticker(it),s=id!==undefined&&CAT.stickers[id],nm=s?s.n:'Sticker'+(id!==undefined?' #'+id:'');
     return{w:'Sticker',s:nm.replace(/^Sticker \| /,''),full:nm,r:(own>=1&&own<=6)?own:(s?s.r:3),img:s?s.i:null}}
   const wn=WEAPONS[d]||(d?'Item '+d:'Predmet '+it.k),e=CAT.skins[d+'|'+p]||CAT.skins[wn+'|'+p];
   const skin=e?e.n.split(' | ').slice(1).join(' | ').replace(/^★ /,''):(p?(CAT.byPaint[p]||'Paint #'+p):'Vanilla'),label=cn?`"${cn}"`:skin;
   return{w:wn,s:label,full:wn+' | '+label,r:(own>=1&&own<=6)?own:(e?e.r:(d>=500&&d<=516?6:3)),img:e?e.i:null}}
-const okItem=it=>{const d=+gv(it,'def_index');return !d||!!WEAPONS[d]||d===STICKER_DEF};
+const okItem=it=>{const d=getDef(it);return !d||!!WEAPONS[d]||d===STICKER_DEF};
 function nameOf(it){const r=resolveItem(it);return[r.w,r.s,r.full]}
 // ==/PURE==
 
@@ -81,13 +91,15 @@ window.uploadInventoryFile=function(){const f=$('inv-file-input').files[0];if(!f
 window.downloadUpdatedInventory=function(){const inv=db.inventories[me];if(!inv)return alert('Najprv nahraj inventory.txt.');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([serInv(inv)],{type:'text/plain'}));a.download='inventory.txt';document.body.appendChild(a);a.click();a.remove()};
 
-function tile(it,onclick){const d=document.createElement('div'),r=resolveItem(it);d.className='item-card rarity-'+r.r;
+function tile(it,onclick){const d=document.createElement('div'),r=resolveItem(it);d.className='item-card rarity-'+r.r;d.title=JSON.stringify(it.v).slice(0,700);
   const im=r.img&&/^https:\/\//.test(r.img)?`<img src="${esc(r.img)}" alt="" loading="lazy" style="max-width:100%;max-height:84px">`:`<b style="color:#fff">${esc(r.w)}</b>`;
   d.innerHTML=`<div class="item-img">${im}</div><div class="item-footer"><div class="item-weapon">${esc(r.w)}</div><div class="item-skin">${esc(r.s)||'&nbsp;'}</div></div>`;if(onclick)d.onclick=()=>onclick(d);return d}
 window.openUserInventory=function(s){viewed=s;showPage('inventory')};
 function renderSingleInventory(sid){$('trade-split-view').style.display='none';$('single-inv-view').style.display='block';$('send-trade-submit').style.display='none';
   $('inv-title').textContent='Inventory of '+uname(sid);renderInventoryPage()}
-window.renderInventoryPage=function(){const q=$('inv-search').value.toLowerCase(),g=$('single-inv-grid');g.innerHTML='';
+function catStatus(){let e=$('cat-status');if(!e){e=document.createElement('div');e.id='cat-status';e.style.cssText='font-size:11px;color:#8f98a0;margin:4px 0 10px';$('inv-title').after(e)}
+  e.textContent=CAT.ok?`Katalóg: ${CAT.nS} skinov a ${CAT.nT} nálepiek načítaných. Pozri sa myšou na predmet, ukáže sa jeho surový záznam.`:'Katalóg skinov sa NEPODARILO načítať (internet alebo blokátor reklám), preto sa ukazuje len meno zbrane.'}
+window.renderInventoryPage=function(){catStatus();const q=$('inv-search').value.toLowerCase(),g=$('single-inv-grid');g.innerHTML='';
   const l=items(viewed||me).filter(i=>nameOf(i).join(' ').toLowerCase().includes(q));
   if(!l.length)g.innerHTML='<p style="color:#8f98a0;padding:20px">Žiadne predmety.</p>';l.forEach(i=>g.appendChild(tile(i)))};
 
