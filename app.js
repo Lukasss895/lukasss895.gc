@@ -1,9 +1,11 @@
-const APP_VERSION='v2026-11-22-d';
+const APP_VERSION='v2026-11-22-e';
 const API = 'https://lukasss895.jozkobukva6.workers.dev'; // adresa tvojho Workera (bez / na konci)
 
 // ==PURE==
 const WEAPONS={1:'Desert Eagle',2:'Dual Berettas',3:'Five-SeveN',4:'Glock-18',7:'AK-47',8:'AUG',9:'AWP',10:'FAMAS',11:'G3SG1',13:'Galil AR',14:'M249',16:'M4A4',17:'MAC-10',19:'P90',24:'UMP-45',25:'XM1014',26:'PP-Bizon',27:'MAG-7',28:'Negev',29:'Sawed-Off',30:'Tec-9',31:'Zeus x27',32:'P2000',33:'MP7',34:'MP9',35:'Nova',36:'P250',38:'SCAR-20',39:'SG 553',40:'SSG 08',42:'Knife (CT)',59:'Knife (T)',60:'M4A1-S',61:'USP-S',63:'CZ75-Auto',64:'R8 Revolver',500:'Bayonet',505:'Flip Knife',506:'Gut Knife',507:'Karambit',508:'M9 Bayonet',509:'Huntsman Knife',512:'Falchion Knife',514:'Bowie Knife',515:'Butterfly Knife',516:'Shadow Daggers'};
 const STICKER_DEF=1209;
+const MUSIC_DEF=1314;
+const isCrateDef=d=>d>=4000&&d<5000;
 function parseKV(t){let i=0;const n=t.length;
   const ws=()=>{while(i<n){if(/\s/.test(t[i]))i++;else if(t[i]==='/'&&t[i+1]==='/'){while(i<n&&t[i]!=='\n')i++}else break}};
   const tok=()=>{ws();if(i>=n)return null;const c=t[i];if(c==='{'||c==='}'){i++;return c}
@@ -38,24 +40,33 @@ const getDef=it=>pickNum(it,(n,k,p)=>['defindex','definitionindex','itemdefiniti
 const getPaint=it=>pickNum(it,(n,k,p)=>['paintindex','paintkit','paintkitid','paintid','skinid','skinindex','paint'].includes(n)||(isAttr(p)&&k==='6'));
 const getRarity=it=>pickNum(it,(n)=>n==='rarity');
 const getSticker=it=>pickNum(it,(n,k,p)=>(n.includes('sticker')&&(n.endsWith('id')||n.includes('kit')||n==='sticker'))||(isAttr(p)&&k==='113'));
+const getMusic=it=>pickNum(it,(n,k,p)=>n==='musicid'||n==='musickitid'||n==='musickit'||(isAttr(p)&&k==='166'));
 const getCustom=it=>{const x=pickRaw(it,n=>n==='customname'||n==='nametag');return x?String(x):''};
 const RAR={'Consumer Grade':1,'Base Grade':1,'Industrial Grade':2,'High Grade':2,'Mil-Spec Grade':3,'Remarkable':3,'Restricted':4,'Exotic':4,'Classified':5,'Extraordinary':5,'Covert':6,'Contraband':6};
-let CAT={skins:{},byPaint:{},stickers:{},ok:false,nS:0,nT:0};
+let CAT={skins:{},byPaint:{},stickers:{},crates:{},music:{},ok:false,nS:0,nT:0,nC:0,nM:0};
 async function getJSON(name){const bases=['https://bymykel.github.io/CSGO-API/api/en/','https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/','https://cdn.jsdelivr.net/gh/ByMykel/CSGO-API@main/public/api/en/'];
   for(const b of bases){try{const r=await fetch(b+name);if(r.ok)return await r.json()}catch(e){}}return null}
-async function loadCatalog(){try{const [sk,st]=await Promise.all([getJSON('skins.json'),getJSON('stickers.json')]);if(!sk)return;
+async function loadCatalog(){try{const [sk,st,cr,mk]=await Promise.all([getJSON('skins.json'),getJSON('stickers.json'),getJSON('crates.json'),getJSON('music_kits.json')]);if(!sk)return;
     const rn=x=>RAR[typeof x==='object'&&x?x.name:x]||3;
     for(const x of sk){const w=x.weapon||{},pi=x.paint_index==null?0:parseInt(x.paint_index,10)||0,e={n:x.name,i:x.image,r:rn(x.rarity)};CAT.nS++;
       if(w.weapon_id!=null&&!CAT.skins[w.weapon_id+'|'+pi])CAT.skins[w.weapon_id+'|'+pi]=e;if(w.name&&!CAT.skins[w.name+'|'+pi])CAT.skins[w.name+'|'+pi]=e;
       const pat=(typeof x.pattern==='object'&&x.pattern?x.pattern.name:x.pattern)||(x.name.split(' | ')[1]||'');if(pi&&!CAT.byPaint[pi])CAT.byPaint[pi]=pat}
-    for(const x of (st||[])){CAT.nT++;CAT.stickers[String(x.id).replace('sticker-','')]={n:x.name,i:x.image,r:rn(x.rarity)}}CAT.ok=true}catch(e){}}
+    for(const x of (st||[])){CAT.nT++;CAT.stickers[String(x.id).replace('sticker-','')]={n:x.name,i:x.image,r:rn(x.rarity)}}
+    for(const x of (cr||[])){const m=/^crate-(\d+)$/.exec(String(x.id));const d=x.def_index!=null?parseInt(x.def_index,10):(m?parseInt(m[1],10):0);
+      if(d&&!CAT.crates[d]){CAT.crates[d]={n:x.name,i:x.image,r:1};CAT.nC++}}
+    for(const x of (mk||[])){const m=/^music_kit-(\d+)$/.exec(String(x.id));if(m&&!/^StatTrak/i.test(x.name)){CAT.music[m[1]]={n:x.name,i:x.image,r:3};CAT.nM++}}
+    CAT.ok=true}catch(e){}}
 function resolveItem(it){const d=getDef(it)||0,p=getPaint(it)||0,cn=getCustom(it),own=getRarity(it)||0;
   if(d===STICKER_DEF){const id=getSticker(it),s=id!==undefined&&CAT.stickers[id],nm=s?s.n:'Sticker'+(id!==undefined?' #'+id:'');
     return{w:'Sticker',s:nm.replace(/^Sticker \| /,''),full:nm,r:s?s.r:((own>=1&&own<=6)?own:3),img:s?s.i:null}}
+  if(d===MUSIC_DEF){const id=getMusic(it),m=id!==undefined&&CAT.music[id],nm=m?m.n:'Music Kit'+(id!==undefined?' #'+id:'');
+    return{w:'Music Kit',s:nm.replace(/^Music Kit \| /,''),full:nm,r:m?m.r:3,img:m?m.i:null}}
+  if(isCrateDef(d)||CAT.crates[d]){const c=CAT.crates[d],nm=c?c.n:'Case #'+d;
+    return{w:'Case',s:nm,full:nm,r:c?c.r:1,img:c?c.i:null}}
   const wn=WEAPONS[d]||(d?'Item '+d:'Item '+it.k),e=CAT.skins[d+'|'+p]||CAT.skins[wn+'|'+p];
   const skin=e?e.n.split(' | ').slice(1).join(' | ').replace(/^★ /,''):(p?(CAT.byPaint[p]||'Paint #'+p):'Vanilla'),label=cn?`"${cn}"`:(skin||'Vanilla');
   return{w:wn,s:label,full:wn+' | '+label,r:e?e.r:((own>=1&&own<=6)?own:(d>=500&&d<=516?6:3)),img:e?e.i:null}}
-const okItem=it=>{const d=getDef(it);return !d||!!WEAPONS[d]||d===STICKER_DEF};
+const okItem=it=>{const d=getDef(it);return !d||!!WEAPONS[d]||d===STICKER_DEF||d===MUSIC_DEF||isCrateDef(d)||!!CAT.crates[d]};
 function nameOf(it){const r=resolveItem(it);return[r.w,r.s,r.full]}
 // ==/PURE==
 
@@ -99,7 +110,7 @@ window.openUserInventory=function(s){viewed=s;showPage('inventory')};
 function renderSingleInventory(sid){$('trade-split-view').style.display='none';$('single-inv-view').style.display='block';$('send-trade-submit').style.display='none';
   $('inv-title').textContent='Inventory of '+uname(sid);renderInventoryPage()}
 function catStatus(){let e=$('cat-status');if(!e){e=document.createElement('div');e.id='cat-status';e.style.cssText='font-size:11px;color:#8f98a0;margin:4px 0 10px';$('inv-title').after(e)}
-  e.textContent=APP_VERSION+' | '+(CAT.ok?`Catalog: ${CAT.nS} skins and ${CAT.nT} stickers loaded. Hover over an item to see its raw record.`:'Skin catalog could not be loaded (internet or ad blocker), so only weapon names are shown.')}
+  e.textContent=APP_VERSION+' | '+(CAT.ok?`Catalog: ${CAT.nS} skins, ${CAT.nT} stickers, ${CAT.nC} cases, ${CAT.nM} music kits loaded. Hover over an item to see its raw record.`:'Skin catalog could not be loaded (internet or ad blocker), so only weapon names are shown.')}
 window.renderInventoryPage=function(){catStatus();const q=$('inv-search').value.toLowerCase(),g=$('single-inv-grid');g.innerHTML='';
   const l=items(viewed||me).filter(i=>nameOf(i).join(' ').toLowerCase().includes(q));
   if(!l.length)g.innerHTML='<p style="color:#8f98a0;padding:20px">No items.</p>';l.forEach(i=>g.appendChild(tile(i)))};
