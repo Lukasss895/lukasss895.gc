@@ -1,3 +1,4 @@
+const APP_VERSION='v2026-11-22-d';
 const API = 'https://lukasss895.jozkobukva6.workers.dev'; // adresa tvojho Workera (bez / na konci)
 
 // ==PURE==
@@ -50,10 +51,10 @@ async function loadCatalog(){try{const [sk,st]=await Promise.all([getJSON('skins
     for(const x of (st||[])){CAT.nT++;CAT.stickers[String(x.id).replace('sticker-','')]={n:x.name,i:x.image,r:rn(x.rarity)}}CAT.ok=true}catch(e){}}
 function resolveItem(it){const d=getDef(it)||0,p=getPaint(it)||0,cn=getCustom(it),own=getRarity(it)||0;
   if(d===STICKER_DEF){const id=getSticker(it),s=id!==undefined&&CAT.stickers[id],nm=s?s.n:'Sticker'+(id!==undefined?' #'+id:'');
-    return{w:'Sticker',s:nm.replace(/^Sticker \| /,''),full:nm,r:(own>=1&&own<=6)?own:(s?s.r:3),img:s?s.i:null}}
+    return{w:'Sticker',s:nm.replace(/^Sticker \| /,''),full:nm,r:s?s.r:((own>=1&&own<=6)?own:3),img:s?s.i:null}}
   const wn=WEAPONS[d]||(d?'Item '+d:'Predmet '+it.k),e=CAT.skins[d+'|'+p]||CAT.skins[wn+'|'+p];
-  const skin=e?e.n.split(' | ').slice(1).join(' | ').replace(/^★ /,''):(p?(CAT.byPaint[p]||'Paint #'+p):'Vanilla'),label=cn?`"${cn}"`:skin;
-  return{w:wn,s:label,full:wn+' | '+label,r:(own>=1&&own<=6)?own:(e?e.r:(d>=500&&d<=516?6:3)),img:e?e.i:null}}
+  const skin=e?e.n.split(' | ').slice(1).join(' | ').replace(/^★ /,''):(p?(CAT.byPaint[p]||'Paint #'+p):'Vanilla'),label=cn?`"${cn}"`:(skin||'Vanilla');
+  return{w:wn,s:label,full:wn+' | '+label,r:e?e.r:((own>=1&&own<=6)?own:(d>=500&&d<=516?6:3)),img:e?e.i:null}}
 const okItem=it=>{const d=getDef(it);return !d||!!WEAPONS[d]||d===STICKER_DEF};
 function nameOf(it){const r=resolveItem(it);return[r.w,r.s,r.full]}
 // ==/PURE==
@@ -98,7 +99,7 @@ window.openUserInventory=function(s){viewed=s;showPage('inventory')};
 function renderSingleInventory(sid){$('trade-split-view').style.display='none';$('single-inv-view').style.display='block';$('send-trade-submit').style.display='none';
   $('inv-title').textContent='Inventory of '+uname(sid);renderInventoryPage()}
 function catStatus(){let e=$('cat-status');if(!e){e=document.createElement('div');e.id='cat-status';e.style.cssText='font-size:11px;color:#8f98a0;margin:4px 0 10px';$('inv-title').after(e)}
-  e.textContent=CAT.ok?`Katalóg: ${CAT.nS} skinov a ${CAT.nT} nálepiek načítaných. Pozri sa myšou na predmet, ukáže sa jeho surový záznam.`:'Katalóg skinov sa NEPODARILO načítať (internet alebo blokátor reklám), preto sa ukazuje len meno zbrane.'}
+  e.textContent=APP_VERSION+' | '+(CAT.ok?`Katalóg: ${CAT.nS} skinov a ${CAT.nT} nálepiek načítaných. Pozri sa myšou na predmet, ukáže sa jeho surový záznam.`:'Katalóg skinov sa NEPODARILO načítať (internet alebo blokátor reklám), preto sa ukazuje len meno zbrane.')}
 window.renderInventoryPage=function(){catStatus();const q=$('inv-search').value.toLowerCase(),g=$('single-inv-grid');g.innerHTML='';
   const l=items(viewed||me).filter(i=>nameOf(i).join(' ').toLowerCase().includes(q));
   if(!l.length)g.innerHTML='<p style="color:#8f98a0;padding:20px">Žiadne predmety.</p>';l.forEach(i=>g.appendChild(tile(i)))};
